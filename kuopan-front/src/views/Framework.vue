@@ -86,7 +86,7 @@ const {proxy} = getCurrentInstance();
 const router = useRouter();
 const route = useRoute();
 const api = {
-  logout: "/logout"
+  logout: "/exit"
 }
 const userInfo = ref(proxy.VueCookies.get("userInfo"));
 

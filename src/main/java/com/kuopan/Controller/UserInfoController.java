@@ -144,7 +144,7 @@ public class UserInfoController extends BaseController {
     /*
      * Logout
      */
-    @RequestMapping("/logout")
+    @RequestMapping("/exit")
     @GlobalInterceptor(checkLogin = false)
     public ResponseVO logout(HttpSession session) {
         if (session != null){

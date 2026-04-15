@@ -1,5 +1,6 @@
 package com.kuopan.Component;
 
+import com.kuopan.DAO.FileInfoMapper;
 import com.kuopan.Entity.constants.Constants;
 import com.kuopan.Entity.dto.SysSettingsDto;
 import com.kuopan.Entity.dto.UserSpaceDto;
@@ -13,6 +14,9 @@ import java.util.concurrent.TimeUnit;
 public class RedisComponent {
     @Resource
     private RedisTemplate<String, Object> searchAndUseInRedis;
+
+    @Resource
+    private FileInfoMapper fileInfoMapper;
 
     public SysSettingsDto getSysSettingDto() {
         SysSettingsDto sysSettingsDto = (SysSettingsDto) searchAndUseInRedis.opsForValue().get(Constants.REDIS_KEY_SYS_SETTINGS);
@@ -31,8 +35,7 @@ public class RedisComponent {
         UserSpaceDto userSpaceDto = (UserSpaceDto) searchAndUseInRedis.opsForValue().get(Constants.REDIS_KEY_USER_SPACE_USE + userId);
         if (userSpaceDto == null) {
             userSpaceDto = new UserSpaceDto();
-            // TODO: Complete the detailed used space from database
-            userSpaceDto.setUseSpace(0L);
+            userSpaceDto.setUseSpace(fileInfoMapper.selectUsedSpace(userId));
             userSpaceDto.setTotalSpace(getSysSettingDto().getUserInitialSpace() * Constants.MB);
             saveUserUsedSpace(userId, userSpaceDto);
         }

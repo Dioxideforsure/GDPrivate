@@ -43,3 +43,12 @@ nginx-1.29.6/
 
 ## Properties ##
 src/main/resources/application.properties
+
+## File upload ##
+file/
+
+## Logs ##
+logs/
+
+## Generator Folder ##
+GeneratorFolder/

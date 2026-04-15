@@ -1,0 +1,550 @@
+Index: src/main/database/file_upload_design.sql
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>CREATE TABLE `file_info` (\r\n    `file_id` varchar(36) NOT NULL COMMENT '文件ID',\r\n    `user_id` varchar(36) NOT NULL COMMENT '用户ID',\r\n    `file_md5` varchar(32) DEFAULT NULL COMMENT '文件MD5值',\r\n    `file_pid` varchar(10) DEFAULT NULL COMMENT '父级ID',\r\n    `file_size` bigint(20) DEFAULT NULL COMMENT '文件大小',\r\n    `file_name` varchar(200) DEFAULT NULL COMMENT '文件名',\r\n    `file_cover` varchar(100) DEFAULT NULL COMMENT '封面',\r\n    `file_path` varchar(100) DEFAULT NULL COMMENT '文件路径',\r\n    `create_time` datetime DEFAULT NULL COMMENT '创建时间',\r\n    `last_update_time` datetime DEFAULT NULL COMMENT '最后更新时间',\r\n    `folder_type` tinyint(1) DEFAULT NULL COMMENT '0: 文件 1: 目录',\r\n    `file_category` tinyint(1) DEFAULT NULL COMMENT '文件分类 1: 视频 2: 音频 3: 图片 4: 文档 5: 其他',\r\n    `file_type` tinyint(1) DEFAULT NULL COMMENT '1: 视频 2: 音频 3: 图片 4: pdf 5: doc 6: excel 7: txt 8: code 9: zip 10: 其他',\r\n    `status` tinyint(1) DEFAULT NULL COMMENT '0: 转码中 1: 转码失败 2: 转码成功',\r\n    `recovery_time` datetime DEFAULT NULL COMMENT '进入回收站时间',\r\n    `del_flag` tinyint(1) DEFAULT NULL COMMENT '标记删除 0: 删除 1: 回收站 2: 正常',\r\n    PRIMARY KEY (`file_id`, `user_id`),\r\n    KEY `idx_create_time` (`create_time`),\r\n    KEY `idx_user_id` (`user_id`),\r\n    KEY `idx_md5` (`file_md5`),\r\n    KEY `idx_file_pid` (`file_pid`),\r\n    KEY `idx_del_flag` (`del_flag`),\r\n    KEY `idx_recover_time` (`recovery_time`),\r\n    KEY `idx_status` (`status`)\r\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件信息';\r\n\r\n-- 预留扩展说明（实现见 Java：com.kuopan.fileupload.FileUploadFeatureReserved）\r\n-- file_md5：秒传/去重；file_cover：缩略图；status：视频转码进度；\r\n-- 分片上传、合并、切片、在线预览：建议新增独立 REST 接口，合并完成后再写 file_info。
+===================================================================
+diff --git a/src/main/database/file_upload_design.sql b/src/main/database/file_upload_design.sql
+--- a/src/main/database/file_upload_design.sql	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/src/main/database/file_upload_design.sql	(date 1775968769051)
+@@ -24,7 +24,3 @@
+     KEY `idx_recover_time` (`recovery_time`),
+     KEY `idx_status` (`status`)
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件信息';
+-
+--- 预留扩展说明（实现见 Java：com.kuopan.fileupload.FileUploadFeatureReserved）
+--- file_md5：秒传/去重；file_cover：缩略图；status：视频转码进度；
+--- 分片上传、合并、切片、在线预览：建议新增独立 REST 接口，合并完成后再写 file_info。
+\ No newline at end of file
+Index: src/main/java/com/kuopan/Controller/FileInfoController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.kuopan.Controller;\r\n\r\nimport com.kuopan.Annotation.GlobalInterceptor;\r\nimport com.kuopan.Entity.dto.SessionWebUserDto;\r\nimport com.kuopan.Service.impl.FileInfoServiceImpl;\r\nimport com.kuopan.vo.ResponseVO;\r\nimport org.springframework.web.bind.annotation.RequestMapping;\r\nimport org.springframework.web.bind.annotation.RestController;\r\nimport org.springframework.web.multipart.MultipartFile;\r\n\r\nimport javax.annotation.Resource;\r\nimport javax.servlet.http.HttpSession;\r\nimport java.util.HashMap;\r\nimport java.util.List;\r\nimport java.util.Map;\r\n\r\n@RestController(\"fileInfoController\")\r\n@RequestMapping(\"/file\")\r\npublic class FileInfoController extends BaseController {\r\n\r\n    @Resource\r\n    private FileInfoServiceImpl fileInfoService;\r\n\r\n    @RequestMapping(\"/upload\")\r\n    @GlobalInterceptor(checkLogin = true)\r\n    public ResponseVO upload(HttpSession session, String filePid, MultipartFile file) {\r\n        SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);\r\n        Map<String, Object> uploadResult = fileInfoService.uploadFile(sessionWebUserDto.getUserId(), filePid, file);\r\n        return ResponseVO.success(uploadResult);\r\n    }\r\n\r\n    @RequestMapping(\"/list\")\r\n    @GlobalInterceptor(checkLogin = true)\r\n    public ResponseVO list(HttpSession session, String filePid, String fileNameFuzzy, String category) {\r\n        SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);\r\n        List<Map<String, Object>> list = fileInfoService.listUserFiles(sessionWebUserDto.getUserId(), filePid, fileNameFuzzy, category);\r\n        Map<String, Object> data = new HashMap<>();\r\n        data.put(\"list\", list);\r\n        return ResponseVO.success(data);\r\n    }\r\n\r\n    @RequestMapping(\"/uploadChunk\")\r\n    @GlobalInterceptor(checkLogin = true)\r\n    public ResponseVO uploadChunk(HttpSession session, String fileMd5, Integer chunkIndex, Integer chunks, MultipartFile chunk) {\r\n        SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);\r\n        Map<String, Object> r = fileInfoService.uploadChunk(sessionWebUserDto.getUserId(), fileMd5, chunkIndex, chunks, chunk);\r\n        return ResponseVO.success(r);\r\n    }\r\n\r\n    @RequestMapping(\"/mergeChunk\")\r\n    @GlobalInterceptor(checkLogin = true)\r\n    public ResponseVO mergeChunk(HttpSession session, String filePid, String fileMd5, String fileName, Long fileSize, Integer chunks) {\r\n        SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);\r\n        Map<String, Object> r = fileInfoService.mergeChunks(sessionWebUserDto.getUserId(), filePid, fileMd5, fileName, fileSize, chunks);\r\n        return ResponseVO.success(r);\r\n    }\r\n\r\n    @RequestMapping(\"/checkMd5\")\r\n    @GlobalInterceptor(checkLogin = true)\r\n    public ResponseVO checkMd5(HttpSession session, String fileMd5, Long fileSize) {\r\n        boolean exists = fileInfoService.checkFileExists(fileMd5, fileSize);\r\n        Map<String, Object> data = new HashMap<>();\r\n        data.put(\"exists\", exists);\r\n        return ResponseVO.success(data);\r\n    }\r\n\r\n    @RequestMapping(\"/newFolder\")\r\n    @GlobalInterceptor(checkLogin = true)\r\n    public ResponseVO newFolder(HttpSession session, String filePid, String fileName) {\r\n        SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);\r\n        Map<String, Object> result = fileInfoService.newFolder(sessionWebUserDto.getUserId(), filePid, fileName);\r\n        return ResponseVO.success(result);\r\n    }\r\n\r\n    @RequestMapping(\"/delFile\")\r\n    @GlobalInterceptor(checkLogin = true)\r\n    public ResponseVO delFile(HttpSession session, String fileIds) {\r\n        SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);\r\n        fileInfoService.deleteFile(sessionWebUserDto.getUserId(), fileIds);\r\n        return ResponseVO.success(null);\r\n    }\r\n}
+===================================================================
+diff --git a/src/main/java/com/kuopan/Controller/FileInfoController.java b/src/main/java/com/kuopan/Controller/FileInfoController.java
+--- a/src/main/java/com/kuopan/Controller/FileInfoController.java	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/src/main/java/com/kuopan/Controller/FileInfoController.java	(date 1775984809624)
+@@ -1,7 +1,10 @@
+ package com.kuopan.Controller;
+ 
+ import com.kuopan.Annotation.GlobalInterceptor;
++import com.kuopan.Annotation.VerifyParams;
+ import com.kuopan.Entity.dto.SessionWebUserDto;
++import com.kuopan.Entity.dto.UploadFilePropertiesDto;
++import com.kuopan.Entity.dto.UploadResultDto;
+ import com.kuopan.Service.impl.FileInfoServiceImpl;
+ import com.kuopan.vo.ResponseVO;
+ import org.springframework.web.bind.annotation.RequestMapping;
+@@ -22,11 +25,17 @@
+     private FileInfoServiceImpl fileInfoService;
+ 
+     @RequestMapping("/upload")
+-    @GlobalInterceptor(checkLogin = true)
+-    public ResponseVO upload(HttpSession session, String filePid, MultipartFile file) {
++    @GlobalInterceptor(checkParams = true)
++    public ResponseVO upload(HttpSession session, String fileId, MultipartFile file,
++                             @VerifyParams(required = true) String fileName,
++                             @VerifyParams(required = true) String filePid,
++                             @VerifyParams(required = true) String fileMD5,
++                             @VerifyParams(required = true) Integer chunkIndex,
++                             @VerifyParams(required = true) Integer chunks) {
+         SessionWebUserDto sessionWebUserDto = getUserInfoFromSession(session);
+-        Map<String, Object> uploadResult = fileInfoService.uploadFile(sessionWebUserDto.getUserId(), filePid, file);
+-        return ResponseVO.success(uploadResult);
++        UploadFilePropertiesDto dto = new UploadFilePropertiesDto(fileId, file, fileName, filePid, fileMD5, chunkIndex, chunks);
++        UploadResultDto resultDto = fileInfoService.uploadFile(sessionWebUserDto, dto);
++        return ResponseVO.success(resultDto);
+     }
+ 
+     @RequestMapping("/list")
+Index: src/main/java/com/kuopan/Component/FileProcessTask.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.kuopan.Component;\r\n\r\nimport com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;\r\nimport com.kuopan.Config.AppConfig;\r\nimport com.kuopan.DAO.FileInfoMapper;\r\nimport com.kuopan.Entity.FileInfo;\r\nimport com.kuopan.Util.FfmpegUtils;\r\nimport org.apache.commons.io.FilenameUtils;\r\nimport org.slf4j.Logger;\r\nimport org.slf4j.LoggerFactory;\r\nimport org.springframework.scheduling.annotation.Async;\r\nimport org.springframework.stereotype.Component;\r\n\r\nimport javax.annotation.Resource;\r\nimport java.io.File;\r\n\r\n@Component\r\npublic class FileProcessTask {\r\n\r\n    private static final Logger logger = LoggerFactory.getLogger(FileProcessTask.class);\r\n\r\n    @Resource\r\n    private AppConfig appConfig;\r\n    @Resource\r\n    private FileInfoMapper fileInfoMapper;\r\n\r\n    @Async // 标注为异步任务\r\n    public void processFile(FileInfo fileInfo) {\r\n        String fileId = fileInfo.getFileId();\r\n        String originalFilePath = appConfig.getProjectFolder() + fileInfo.getFilePath();\r\n\r\n        try {\r\n            // 视频文件分类为 1 (根据你的 FileCategoryUtil 判断)\r\n            if (fileInfo.getFileCategory() != null && fileInfo.getFileCategory() == 1) {\r\n                logger.info(\"开始处理视频文件: {}\", fileInfo.getFileName());\r\n\r\n                // 1. 准备封面路径: file/userId/date/uuid.png\r\n                String coverRelativePath = fileInfo.getFilePath().replace(\".\" + FilenameUtils.getExtension(fileInfo.getFilePath()), \".png\");\r\n                String coverAbsolutePath = appConfig.getProjectFolder() + coverRelativePath;\r\n\r\n                // 生成封面\r\n                FfmpegUtils.createCover(originalFilePath, coverAbsolutePath);\r\n\r\n                // 2. 准备切片目录: file/userId/date/uuid/\r\n                String tsFolderRelative = fileInfo.getFilePath().substring(0, fileInfo.getFilePath().lastIndexOf(\".\")) + \"/\";\r\n                String tsFolderAbsolute = appConfig.getProjectFolder() + tsFolderRelative;\r\n                File tsFolder = new File(tsFolderAbsolute);\r\n                if (!tsFolder.exists()) {\r\n                    tsFolder.mkdirs();\r\n                }\r\n\r\n                // 视频切片\r\n                FfmpegUtils.transferToM3u8(originalFilePath, tsFolderAbsolute);\r\n\r\n                // 3. 处理完成，更新数据库状态为成功 (status = 2)\r\n                LambdaUpdateWrapper<FileInfo> updateWrapper = new LambdaUpdateWrapper<>();\r\n                updateWrapper.eq(FileInfo::getFileId, fileId)\r\n                        .set(FileInfo::getFileCover, coverRelativePath)\r\n                        .set(FileInfo::getStatus, 2);\r\n                fileInfoMapper.update(null, updateWrapper);\r\n\r\n                logger.info(\"视频文件处理成功: {}\", fileInfo.getFileName());\r\n            }\r\n            // 如果是图片 (fileCategory == 3)，也可以在这里用 Thumbnailator 生成缩略图\r\n        } catch (Exception e) {\r\n            logger.error(\"文件处理失败\", e);\r\n            // 处理失败，更新状态 (status = 1)\r\n            LambdaUpdateWrapper<FileInfo> failWrapper = new LambdaUpdateWrapper<>();\r\n            failWrapper.eq(FileInfo::getFileId, fileId).set(FileInfo::getStatus, 1);\r\n            fileInfoMapper.update(null, failWrapper);\r\n        }\r\n    }\r\n}
+===================================================================
+diff --git a/src/main/java/com/kuopan/Component/FileProcessTask.java b/src/main/java/com/kuopan/Component/FileProcessTask.java
+--- a/src/main/java/com/kuopan/Component/FileProcessTask.java	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/src/main/java/com/kuopan/Component/FileProcessTask.java	(date 1775968871175)
+@@ -5,26 +5,24 @@
+ import com.kuopan.DAO.FileInfoMapper;
+ import com.kuopan.Entity.FileInfo;
+ import com.kuopan.Util.FfmpegUtils;
++import lombok.extern.slf4j.Slf4j;
+ import org.apache.commons.io.FilenameUtils;
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
+ import org.springframework.scheduling.annotation.Async;
+ import org.springframework.stereotype.Component;
+ 
+ import javax.annotation.Resource;
+ import java.io.File;
+ 
++@Slf4j
+ @Component
+ public class FileProcessTask {
+ 
+-    private static final Logger logger = LoggerFactory.getLogger(FileProcessTask.class);
+-
+     @Resource
+     private AppConfig appConfig;
+     @Resource
+     private FileInfoMapper fileInfoMapper;
+ 
+-    @Async // 标注为异步任务
++    @Async
+     public void processFile(FileInfo fileInfo) {
+         String fileId = fileInfo.getFileId();
+         String originalFilePath = appConfig.getProjectFolder() + fileInfo.getFilePath();
+@@ -32,7 +30,7 @@
+         try {
+             // 视频文件分类为 1 (根据你的 FileCategoryUtil 判断)
+             if (fileInfo.getFileCategory() != null && fileInfo.getFileCategory() == 1) {
+-                logger.info("开始处理视频文件: {}", fileInfo.getFileName());
++                log.info("开始处理视频文件: {}", fileInfo.getFileName());
+ 
+                 // 1. 准备封面路径: file/userId/date/uuid.png
+                 String coverRelativePath = fileInfo.getFilePath().replace("." + FilenameUtils.getExtension(fileInfo.getFilePath()), ".png");
+@@ -52,19 +50,16 @@
+                 // 视频切片
+                 FfmpegUtils.transferToM3u8(originalFilePath, tsFolderAbsolute);
+ 
+-                // 3. 处理完成，更新数据库状态为成功 (status = 2)
+                 LambdaUpdateWrapper<FileInfo> updateWrapper = new LambdaUpdateWrapper<>();
+                 updateWrapper.eq(FileInfo::getFileId, fileId)
+                         .set(FileInfo::getFileCover, coverRelativePath)
+                         .set(FileInfo::getStatus, 2);
+                 fileInfoMapper.update(null, updateWrapper);
+ 
+-                logger.info("视频文件处理成功: {}", fileInfo.getFileName());
++                log.info("视频文件处理成功: {}", fileInfo.getFileName());
+             }
+-            // 如果是图片 (fileCategory == 3)，也可以在这里用 Thumbnailator 生成缩略图
+         } catch (Exception e) {
+-            logger.error("文件处理失败", e);
+-            // 处理失败，更新状态 (status = 1)
++            log.error("文件处理失败", e);
+             LambdaUpdateWrapper<FileInfo> failWrapper = new LambdaUpdateWrapper<>();
+             failWrapper.eq(FileInfo::getFileId, fileId).set(FileInfo::getStatus, 1);
+             fileInfoMapper.update(null, failWrapper);
+Index: src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.kuopan.Service.impl;\r\n\r\nimport com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;\r\nimport com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;\r\nimport com.kuopan.Component.FileProcessTask;\r\nimport com.kuopan.Component.RedisComponent;\r\nimport com.kuopan.Config.AppConfig;\r\nimport com.kuopan.DAO.FileInfoMapper;\r\nimport com.kuopan.DAO.UserInfoMapper;\r\nimport com.kuopan.Entity.FileInfo;\r\nimport com.kuopan.Entity.dto.UserSpaceDto;\r\nimport com.kuopan.Exception.BusinessException;\r\nimport com.kuopan.Util.FileCategoryUtil;\r\nimport org.apache.commons.codec.digest.DigestUtils;\r\nimport org.apache.commons.io.FilenameUtils;\r\nimport org.apache.commons.lang3.RandomStringUtils;\r\nimport org.apache.commons.lang3.StringUtils;\r\nimport org.springframework.stereotype.Service;\r\nimport org.springframework.transaction.annotation.Transactional;\r\nimport org.springframework.web.multipart.MultipartFile;\r\n\r\nimport javax.annotation.Resource;\r\nimport java.io.File;\r\nimport java.io.IOException;\r\nimport java.io.InputStream;\r\nimport java.time.LocalDate;\r\nimport java.time.LocalDateTime;\r\nimport java.time.format.DateTimeFormatter;\r\nimport java.util.ArrayList;\r\nimport java.util.HashMap;\r\nimport java.util.List;\r\nimport java.util.Map;\r\n\r\n@Service\r\npublic class FileInfoServiceImpl {\r\n\r\n    private static final int DB_FILE_PATH_MAX = 100;\r\n    private static final int DEL_FLAG_NORMAL = 2;\r\n    private static final int STATUS_OK = 2;\r\n    private static final int STATUS_TRANSFERRING = 0;\r\n    private static final int FOLDER_TYPE_FILE = 0;\r\n\r\n    @Resource\r\n    private FileInfoMapper fileInfoMapper;\r\n\r\n    @Resource\r\n    private UserInfoMapper userInfoMapper;\r\n\r\n    @Resource\r\n    private RedisComponent redisComponent;\r\n\r\n    @Resource\r\n    private AppConfig appConfig;\r\n\r\n    @Resource\r\n    private FileProcessTask fileProcessTask;\r\n\r\n    private static final DateTimeFormatter LIST_TIME_FMT = DateTimeFormatter.ofPattern(\"yyyy-MM-dd HH:mm:ss\");\r\n\r\n    @Transactional(rollbackFor = Exception.class)\r\n    public Map<String, Object> uploadFile(String userId, String filePid, MultipartFile file) {\r\n        if (file == null || file.isEmpty()) throw new BusinessException(\"上传文件不能为空\");\r\n        if (StringUtils.isBlank(filePid)) filePid = \"0\";\r\n\r\n        Long fileSize = file.getSize();\r\n        UserSpaceDto userSpaceDto = redisComponent.getUserUsedSpace(userId);\r\n        Long useSpace = userSpaceDto.getUseSpace() == null ? 0L : userSpaceDto.getUseSpace();\r\n        Long totalSpace = userSpaceDto.getTotalSpace() == null ? 0L : userSpaceDto.getTotalSpace();\r\n\r\n        if (useSpace + fileSize > totalSpace) throw new BusinessException(\"用户空间不足，请清理后重试\");\r\n\r\n        String originFileName = file.getOriginalFilename();\r\n        if (originFileName == null) originFileName = \"unknown\";\r\n        if (originFileName.length() > 200) originFileName = originFileName.substring(0, 200);\r\n\r\n        String suffix = FilenameUtils.getExtension(originFileName);\r\n        String fileMd5 = calculateFileMd5(file);\r\n\r\n        FileInfo fastHit = findFastUploadCandidate(fileMd5, fileSize);\r\n        if (fastHit != null) {\r\n            return saveByFastUpload(userId, filePid, originFileName, fileSize, suffix, fileMd5, fastHit.getFilePath(), fastHit.getFileCover(), userSpaceDto, useSpace);\r\n        }\r\n\r\n        // 修复：生成 10 位短 ID，防止超长报错\r\n        String fileId = RandomStringUtils.randomAlphanumeric(10);\r\n        String localName = StringUtils.isBlank(suffix) ? fileId : fileId + \".\" + suffix;\r\n        String relativePath = \"file/\" + userId + \"/\" + LocalDate.now() + \"/\" + localName;\r\n\r\n        File dest = new File(appConfig.getProjectFolder() + relativePath);\r\n        File parent = dest.getParentFile();\r\n        if (parent != null && !parent.exists() && !parent.mkdirs()) throw new BusinessException(\"创建上传目录失败\");\r\n\r\n        try { file.transferTo(dest); } catch (IOException e) { throw new BusinessException(\"文件保存失败，请稍后重试\"); }\r\n\r\n        try {\r\n            LocalDateTime now = LocalDateTime.now();\r\n            int[] catType = FileCategoryUtil.resolveFromExtension(suffix);\r\n            int status = (catType[0] == 1) ? STATUS_TRANSFERRING : STATUS_OK;\r\n\r\n            FileInfo fileInfo = new FileInfo();\r\n            fileInfo.setFileId(fileId);\r\n            fileInfo.setUserId(userId);\r\n            fileInfo.setFileMd5(fileMd5);\r\n            fileInfo.setFilePid(filePid); // 存入父目录ID\r\n            fileInfo.setFileName(originFileName);\r\n            fileInfo.setFilePath(relativePath);\r\n            fileInfo.setFileCover(null);\r\n            fileInfo.setFileSize(fileSize);\r\n            fileInfo.setFolderType(FOLDER_TYPE_FILE);\r\n            fileInfo.setFileCategory(catType[0]);\r\n            fileInfo.setFileType(catType[1]);\r\n            fileInfo.setStatus(status);\r\n            fileInfo.setRecoveryTime(null);\r\n            fileInfo.setDelFlag(DEL_FLAG_NORMAL);\r\n            fileInfo.setCreateTime(now);\r\n            fileInfo.setLastUpdateTime(now);\r\n\r\n            fileInfoMapper.insert(fileInfo);\r\n            userInfoMapper.updateRemainSpaceByGUID(userId, fileSize);\r\n\r\n            userSpaceDto.setUseSpace(useSpace + fileSize);\r\n            redisComponent.saveUserUsedSpace(userId, userSpaceDto);\r\n\r\n            if (status == STATUS_TRANSFERRING) fileProcessTask.processFile(fileInfo);\r\n\r\n            Map<String, Object> result = new HashMap<>();\r\n            result.put(\"fileId\", fileId);\r\n            result.put(\"fileName\", originFileName);\r\n            result.put(\"fileSize\", fileSize);\r\n            result.put(\"filePath\", relativePath);\r\n            result.put(\"fileCategory\", catType[0]);\r\n            result.put(\"fileType\", catType[1]);\r\n            return result;\r\n        } catch (Exception e) {\r\n            if (dest.exists()) dest.delete();\r\n            throw new BusinessException(\"上传失败，请稍后重试\");\r\n        }\r\n    }\r\n\r\n    public List<Map<String, Object>> listUserFiles(String userId, String filePid, String fileNameFuzzy, String categoryKey) {\r\n        LambdaQueryWrapper<FileInfo> w = new LambdaQueryWrapper<>();\r\n        w.eq(FileInfo::getUserId, userId);\r\n        w.eq(FileInfo::getDelFlag, DEL_FLAG_NORMAL);\r\n\r\n        if (StringUtils.isBlank(filePid)) filePid = \"0\";\r\n        w.eq(FileInfo::getFilePid, filePid); // 只查当前目录\r\n\r\n        if (StringUtils.isNotBlank(fileNameFuzzy)) w.like(FileInfo::getFileName, fileNameFuzzy);\r\n        Integer cat = resolveCategoryFilter(categoryKey);\r\n        if (cat != null) w.eq(FileInfo::getFileCategory, cat);\r\n        w.orderByDesc(FileInfo::getFolderType).orderByDesc(FileInfo::getLastUpdateTime);\r\n\r\n        List<FileInfo> rows = fileInfoMapper.selectList(w);\r\n        List<Map<String, Object>> out = new ArrayList<>(rows.size());\r\n        for (FileInfo f : rows) {\r\n            Map<String, Object> row = new HashMap<>();\r\n            row.put(\"fileId\", f.getFileId());\r\n            row.put(\"fileName\", f.getFileName());\r\n            row.put(\"fileSize\", f.getFileSize());\r\n            row.put(\"folderType\", f.getFolderType() == null ? FOLDER_TYPE_FILE : f.getFolderType());\r\n            row.put(\"status\", f.getStatus());\r\n            row.put(\"filePath\", f.getFilePath());\r\n            row.put(\"fileCategory\", f.getFileCategory());\r\n            row.put(\"fileCover\", f.getFileCover());\r\n            row.put(\"filePid\", f.getFilePid());\r\n\r\n            LocalDateTime t = f.getLastUpdateTime() != null ? f.getLastUpdateTime() : f.getCreateTime();\r\n            row.put(\"updateTime\", t == null ? \"\" : LIST_TIME_FMT.format(t));\r\n            out.add(row);\r\n        }\r\n        return out;\r\n    }\r\n\r\n    public Map<String, Object> uploadChunk(String userId, String fileMd5, Integer chunkIndex, Integer chunks, MultipartFile chunk) {\r\n        String tmpRelativeDir = \"file/chunks/\" + userId + \"/\" + fileMd5 + \"/\";\r\n        File dir = new File(appConfig.getProjectFolder() + tmpRelativeDir);\r\n        if (!dir.exists() && !dir.mkdirs()) throw new BusinessException(\"创建分片目录失败\");\r\n        File part = new File(dir, chunkIndex + \".part\");\r\n        try { chunk.transferTo(part); } catch (IOException e) { throw new BusinessException(\"保存分片失败\"); }\r\n        Map<String, Object> r = new HashMap<>();\r\n        r.put(\"chunkIndex\", chunkIndex);\r\n        r.put(\"chunks\", chunks);\r\n        r.put(\"uploaded\", true);\r\n        return r;\r\n    }\r\n\r\n    @Transactional(rollbackFor = Exception.class)\r\n    public Map<String, Object> mergeChunks(String userId, String filePid, String fileMd5, String fileName, Long fileSize, Integer chunks) {\r\n        if (StringUtils.isBlank(filePid)) filePid = \"0\";\r\n        FileInfo fastHit = findFastUploadCandidate(fileMd5, fileSize);\r\n        if (fastHit != null) {\r\n            return saveByFastUpload(userId, filePid, fileName, fileSize, FilenameUtils.getExtension(fileName), fileMd5, fastHit.getFilePath(), fastHit.getFileCover(), redisComponent.getUserUsedSpace(userId), redisComponent.getUserUsedSpace(userId).getUseSpace());\r\n        }\r\n\r\n        UserSpaceDto userSpaceDto = redisComponent.getUserUsedSpace(userId);\r\n        Long useSpace = userSpaceDto.getUseSpace() == null ? 0L : userSpaceDto.getUseSpace();\r\n        Long totalSpace = userSpaceDto.getTotalSpace() == null ? 0L : userSpaceDto.getTotalSpace();\r\n        if (useSpace + fileSize > totalSpace) throw new BusinessException(\"用户空间不足，请清理后重试\");\r\n\r\n        String suffix = FilenameUtils.getExtension(fileName);\r\n\r\n        // 修复：生成 10 位短 ID\r\n        String fileId = RandomStringUtils.randomAlphanumeric(10);\r\n        String localName = StringUtils.isBlank(suffix) ? fileId : fileId + \".\" + suffix;\r\n        String relativePath = \"file/\" + userId + \"/\" + LocalDate.now() + \"/\" + localName;\r\n\r\n        String tmpRelativeDir = \"file/chunks/\" + userId + \"/\" + fileMd5 + \"/\";\r\n        File dir = new File(appConfig.getProjectFolder() + tmpRelativeDir);\r\n        File dest = new File(appConfig.getProjectFolder() + relativePath);\r\n        File parent = dest.getParentFile();\r\n        if (parent != null && !parent.exists() && !parent.mkdirs()) throw new BusinessException(\"创建上传目录失败\");\r\n\r\n        try (java.io.OutputStream out = new java.io.BufferedOutputStream(new java.io.FileOutputStream(dest))) {\r\n            for (int i = 0; i < chunks; i++) {\r\n                File part = new File(dir, i + \".part\");\r\n                try (java.io.InputStream in = new java.io.BufferedInputStream(new java.io.FileInputStream(part))) {\r\n                    byte[] buf = new byte[1024 * 1024]; int len;\r\n                    while ((len = in.read(buf)) != -1) out.write(buf, 0, len);\r\n                }\r\n                part.delete();\r\n            }\r\n            dir.delete();\r\n        } catch (Exception e) {\r\n            if (dest.exists()) dest.delete();\r\n            throw new BusinessException(\"合并失败，请稍后重试\");\r\n        }\r\n\r\n        LocalDateTime now = LocalDateTime.now();\r\n        int[] catType = FileCategoryUtil.resolveFromExtension(suffix);\r\n        int status = (catType[0] == 1) ? STATUS_TRANSFERRING : STATUS_OK;\r\n\r\n        FileInfo fileInfo = new FileInfo();\r\n        fileInfo.setFileId(fileId);\r\n        fileInfo.setUserId(userId);\r\n        fileInfo.setFileMd5(fileMd5);\r\n        fileInfo.setFilePid(filePid);\r\n        fileInfo.setFileName(fileName);\r\n        fileInfo.setFilePath(relativePath);\r\n        fileInfo.setFileSize(fileSize);\r\n        fileInfo.setFolderType(FOLDER_TYPE_FILE);\r\n        fileInfo.setFileCategory(catType[0]);\r\n        fileInfo.setFileType(catType[1]);\r\n        fileInfo.setStatus(status);\r\n        fileInfo.setDelFlag(DEL_FLAG_NORMAL);\r\n        fileInfo.setCreateTime(now);\r\n        fileInfo.setLastUpdateTime(now);\r\n\r\n        fileInfoMapper.insert(fileInfo);\r\n        userInfoMapper.updateRemainSpaceByGUID(userId, fileSize);\r\n        userSpaceDto.setUseSpace(useSpace + fileSize);\r\n        redisComponent.saveUserUsedSpace(userId, userSpaceDto);\r\n\r\n        if (status == STATUS_TRANSFERRING) fileProcessTask.processFile(fileInfo);\r\n\r\n        Map<String, Object> r = new HashMap<>();\r\n        r.put(\"fileId\", fileId);\r\n        r.put(\"merged\", true);\r\n        return r;\r\n    }\r\n\r\n    @Transactional(rollbackFor = Exception.class)\r\n    public Map<String, Object> newFolder(String userId, String filePid, String folderName) {\r\n        if (StringUtils.isBlank(folderName)) throw new BusinessException(\"文件夹名称不能为空\");\r\n        if (StringUtils.isBlank(filePid)) filePid = \"0\";\r\n\r\n        Long count = fileInfoMapper.selectCount(new LambdaQueryWrapper<FileInfo>()\r\n                .eq(FileInfo::getFilePid, filePid)\r\n                .eq(FileInfo::getUserId, userId)\r\n                .eq(FileInfo::getFileName, folderName)\r\n                .eq(FileInfo::getFolderType, 1)\r\n                .eq(FileInfo::getDelFlag, DEL_FLAG_NORMAL));\r\n        if (count > 0) throw new BusinessException(\"该目录下已存在同名文件夹\");\r\n\r\n        LocalDateTime now = LocalDateTime.now();\r\n        FileInfo folder = new FileInfo();\r\n\r\n        // 修复：生成 10 位短 ID\r\n        folder.setFileId(RandomStringUtils.randomAlphanumeric(10));\r\n        folder.setUserId(userId);\r\n        folder.setFilePid(filePid);\r\n        folder.setFileName(folderName);\r\n        folder.setFolderType(1); // 文件夹类型为1\r\n        folder.setStatus(STATUS_OK);\r\n        folder.setDelFlag(DEL_FLAG_NORMAL);\r\n        folder.setCreateTime(now);\r\n        folder.setLastUpdateTime(now);\r\n\r\n        fileInfoMapper.insert(folder);\r\n\r\n        Map<String, Object> res = new HashMap<>();\r\n        res.put(\"fileId\", folder.getFileId());\r\n        return res;\r\n    }\r\n\r\n    @Transactional(rollbackFor = Exception.class)\r\n    public void deleteFile(String userId, String fileIds) {\r\n        if (StringUtils.isBlank(fileIds)) throw new BusinessException(\"请选择文件\");\r\n        String[] idArray = fileIds.split(\",\");\r\n        LambdaUpdateWrapper<FileInfo> updateWrapper = new LambdaUpdateWrapper<>();\r\n        updateWrapper.in(FileInfo::getFileId, java.util.Arrays.asList(idArray))\r\n                .eq(FileInfo::getUserId, userId)\r\n                .set(FileInfo::getDelFlag, 1) // 移入回收站状态为1\r\n                .set(FileInfo::getRecoveryTime, LocalDateTime.now());\r\n        fileInfoMapper.update(null, updateWrapper);\r\n    }\r\n\r\n    private Integer resolveCategoryFilter(String category) {\r\n        if (StringUtils.isBlank(category) || \"all\".equalsIgnoreCase(category.trim())) return null;\r\n        switch (category.trim().toLowerCase()) {\r\n            case \"video\": return 1;\r\n            case \"music\": return 2;\r\n            case \"image\": return 3;\r\n            case \"doc\": return 4;\r\n            case \"others\": return 5;\r\n            default: return null;\r\n        }\r\n    }\r\n\r\n    private String calculateFileMd5(MultipartFile file) {\r\n        try (InputStream inputStream = file.getInputStream()) {\r\n            return DigestUtils.md5Hex(inputStream);\r\n        } catch (Exception e) { throw new BusinessException(\"读取摘要失败\"); }\r\n    }\r\n\r\n    private FileInfo findFastUploadCandidate(String fileMd5, Long fileSize) {\r\n        LambdaQueryWrapper<FileInfo> query = new LambdaQueryWrapper<>();\r\n        query.eq(FileInfo::getFileMd5, fileMd5).eq(FileInfo::getFileSize, fileSize)\r\n                .eq(FileInfo::getFolderType, FOLDER_TYPE_FILE).eq(FileInfo::getDelFlag, DEL_FLAG_NORMAL)\r\n                .eq(FileInfo::getStatus, STATUS_OK).last(\"limit 1\");\r\n        FileInfo exist = fileInfoMapper.selectOne(query);\r\n        if (exist == null || StringUtils.isBlank(exist.getFilePath())) return null;\r\n        return new File(appConfig.getProjectFolder() + exist.getFilePath()).exists() ? exist : null;\r\n    }\r\n\r\n    private Map<String, Object> saveByFastUpload(String userId, String filePid, String originFileName, Long fileSize, String suffix, String fileMd5, String relativePath, String fileCover, UserSpaceDto userSpaceDto, Long useSpace) {\r\n        if (StringUtils.isBlank(filePid)) filePid = \"0\";\r\n        FileInfo fileInfo = new FileInfo();\r\n\r\n        // 修复：生成 10 位短 ID\r\n        fileInfo.setFileId(RandomStringUtils.randomAlphanumeric(10));\r\n        fileInfo.setUserId(userId);\r\n        fileInfo.setFileMd5(fileMd5);\r\n        fileInfo.setFilePid(filePid);\r\n        fileInfo.setFileName(originFileName);\r\n        fileInfo.setFilePath(relativePath);\r\n        fileInfo.setFileCover(fileCover);\r\n        fileInfo.setFileSize(fileSize);\r\n        fileInfo.setFolderType(FOLDER_TYPE_FILE);\r\n        int[] catType = FileCategoryUtil.resolveFromExtension(suffix);\r\n        fileInfo.setFileCategory(catType[0]);\r\n        fileInfo.setFileType(catType[1]);\r\n        fileInfo.setStatus(STATUS_OK);\r\n        fileInfo.setDelFlag(DEL_FLAG_NORMAL);\r\n        fileInfo.setCreateTime(LocalDateTime.now());\r\n        fileInfo.setLastUpdateTime(LocalDateTime.now());\r\n        fileInfoMapper.insert(fileInfo);\r\n        userInfoMapper.updateRemainSpaceByGUID(userId, fileSize);\r\n        userSpaceDto.setUseSpace(useSpace + fileSize);\r\n        redisComponent.saveUserUsedSpace(userId, userSpaceDto);\r\n        Map<String, Object> result = new HashMap<>();\r\n        result.put(\"fileId\", fileInfo.getFileId());\r\n        result.put(\"instantUpload\", true);\r\n        return result;\r\n    }\r\n\r\n    public boolean checkFileExists(String fileMd5, Long fileSize) {\r\n        return findFastUploadCandidate(fileMd5, fileSize) != null;\r\n    }\r\n}
+===================================================================
+diff --git a/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java b/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java
+--- a/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java	(date 1775985678308)
+@@ -2,15 +2,22 @@
+ 
+ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
++import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+ import com.kuopan.Component.FileProcessTask;
+ import com.kuopan.Component.RedisComponent;
+ import com.kuopan.Config.AppConfig;
+ import com.kuopan.DAO.FileInfoMapper;
+ import com.kuopan.DAO.UserInfoMapper;
+ import com.kuopan.Entity.FileInfo;
++import com.kuopan.Entity.constants.Constants;
++import com.kuopan.Entity.dto.SessionWebUserDto;
++import com.kuopan.Entity.dto.UploadFilePropertiesDto;
++import com.kuopan.Entity.dto.UploadResultDto;
+ import com.kuopan.Entity.dto.UserSpaceDto;
+ import com.kuopan.Exception.BusinessException;
++import com.kuopan.Service.FileInfoService;
+ import com.kuopan.Util.FileCategoryUtil;
++import com.kuopan.Util.StringUtil;
+ import org.apache.commons.codec.digest.DigestUtils;
+ import org.apache.commons.io.FilenameUtils;
+ import org.apache.commons.lang3.RandomStringUtils;
+@@ -32,7 +39,7 @@
+ import java.util.Map;
+ 
+ @Service
+-public class FileInfoServiceImpl {
++public class FileInfoServiceImpl extends ServiceImpl<FileInfoMapper, FileInfo> implements FileInfoService {
+ 
+     private static final int DB_FILE_PATH_MAX = 100;
+     private static final int DEL_FLAG_NORMAL = 2;
+@@ -366,4 +373,17 @@
+     public boolean checkFileExists(String fileMd5, Long fileSize) {
+         return findFastUploadCandidate(fileMd5, fileSize) != null;
+     }
++
++    @Override
++    public UploadResultDto uploadFile(SessionWebUserDto webUserDto, UploadFilePropertiesDto fileDto) {
++        if (fileDto == null) {
++            throw new BusinessException("获取文件失败");
++        }
++        UploadResultDto uploadResultDto = new UploadResultDto();
++        if (StringUtil.isEmpty(fileDto.getFileId())) {
++            fileDto.setFilePid(StringUtil.getRandomNumber(Constants.TEN));
++        }
++        uploadResultDto.setFileId(fileDto.getFileId());
++        return uploadResultDto;
++    }
+ }
+\ No newline at end of file
+Index: src/main/java/com/kuopan/Entity/FileInfo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.kuopan.Entity;\r\n\r\nimport com.baomidou.mybatisplus.annotation.TableField;\r\nimport com.baomidou.mybatisplus.annotation.TableId;\r\nimport com.baomidou.mybatisplus.annotation.TableName;\r\nimport lombok.Getter;\r\nimport lombok.Setter;\r\n\r\nimport java.io.Serializable;\r\nimport java.time.LocalDateTime;\r\n\r\n@Getter\r\n@Setter\r\n@TableName(\"file_info\")\r\npublic class FileInfo implements Serializable {\r\n    private static final long serialVersionUID = 1L;\r\n\r\n    @TableId(\"file_id\")\r\n    private String fileId;\r\n\r\n    @TableField(\"user_id\")\r\n    private String userId;\r\n\r\n    /** 秒传、去重预留（可选） */\r\n    @TableField(\"file_md5\")\r\n    private String fileMd5;\r\n\r\n    /** 目录树父级，根目录可为 null；秒传/分片业务流程预留 */\r\n    @TableField(\"file_pid\")\r\n    private String filePid;\r\n\r\n    @TableField(\"file_size\")\r\n    private Long fileSize;\r\n\r\n    @TableField(\"file_name\")\r\n    private String fileName;\r\n\r\n    /** 缩略图/封面预留 */\r\n    @TableField(\"file_cover\")\r\n    private String fileCover;\r\n\r\n    /** 相对 project.folder 的存储路径，满足库字段长度 */\r\n    @TableField(\"file_path\")\r\n    private String filePath;\r\n\r\n    @TableField(\"create_time\")\r\n    private LocalDateTime createTime;\r\n\r\n    @TableField(\"last_update_time\")\r\n    private LocalDateTime lastUpdateTime;\r\n\r\n    /** 0: 文件 1: 目录 */\r\n    @TableField(\"folder_type\")\r\n    private Integer folderType;\r\n\r\n    @TableField(\"file_category\")\r\n    private Integer fileCategory;\r\n\r\n    @TableField(\"file_type\")\r\n    private Integer fileType;\r\n\r\n    /** 转码状态；普通上传可直接置成功，视频处理预留 */\r\n    @TableField(\"status\")\r\n    private Integer status;\r\n\r\n    @TableField(\"recovery_time\")\r\n    private LocalDateTime recoveryTime;\r\n\r\n    /** 0: 删除 1: 回收站 2: 正常 */\r\n    @TableField(\"del_flag\")\r\n    private Integer delFlag;\r\n}\r\n
+===================================================================
+diff --git a/src/main/java/com/kuopan/Entity/FileInfo.java b/src/main/java/com/kuopan/Entity/FileInfo.java
+--- a/src/main/java/com/kuopan/Entity/FileInfo.java	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/src/main/java/com/kuopan/Entity/FileInfo.java	(date 1775969391259)
+@@ -12,8 +12,7 @@
+ @Getter
+ @Setter
+ @TableName("file_info")
+-public class FileInfo implements Serializable {
+-    private static final long serialVersionUID = 1L;
++public class FileInfo implements IEntity {
+ 
+     @TableId("file_id")
+     private String fileId;
+Index: .idea/dataSources.local.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"dataSourceStorageLocal\" created-in=\"IU-241.18034.62\">\r\n    <data-source name=\"KuoPan\" uuid=\"fd3a7be5-6ba6-4d99-9d8b-0be65ed010da\">\r\n      <database-info product=\"\" version=\"\" jdbc-version=\"\" driver-name=\"\" driver-version=\"\" dbms=\"MYSQL\" />\r\n      <schema-mapping />\r\n    </data-source>\r\n    <data-source name=\"KuoPanRedis\" uuid=\"88affee9-9cda-42ce-804c-eb09028daba0\">\r\n      <database-info product=\"\" version=\"\" jdbc-version=\"\" driver-name=\"\" driver-version=\"\" dbms=\"REDIS\" />\r\n      <schema-mapping />\r\n    </data-source>\r\n    <data-source name=\"kuopan_database@127.0.0.1\" uuid=\"aac0f85a-e4cf-4a8e-9fb3-d4a84a7516a0\">\r\n      <database-info product=\"\" version=\"\" jdbc-version=\"\" driver-name=\"\" driver-version=\"\" dbms=\"MYSQL\" />\r\n      <user-name>root</user-name>\r\n      <schema-mapping />\r\n    </data-source>\r\n  </component>\r\n</project>
+===================================================================
+diff --git a/.idea/dataSources.local.xml b/.idea/dataSources.local.xml
+--- a/.idea/dataSources.local.xml	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/.idea/dataSources.local.xml	(date 1775969817112)
+@@ -1,12 +1,25 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="dataSourceStorageLocal" created-in="IU-241.18034.62">
++  <component name="dataSourceStorageLocal" created-in="IU-253.29346.240">
+     <data-source name="KuoPan" uuid="fd3a7be5-6ba6-4d99-9d8b-0be65ed010da">
+-      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MYSQL" />
+-      <schema-mapping />
++      <database-info product="MySQL" version="8.0.45" jdbc-version="4.2" driver-name="MySQL Connector/J" driver-version="mysql-connector-j-9.5.0 (Revision: a7b3c94f50efbddb9f0dd69b3e0d1aaa25305cd6)" dbms="MYSQL" exact-version="8.0.45" exact-driver-version="9.5">
++        <extra-name-characters>$</extra-name-characters>
++        <identifier-quote-string>`</identifier-quote-string>
++        <jdbc-catalog-is-schema>true</jdbc-catalog-is-schema>
++      </database-info>
++      <case-sensitivity plain-identifiers="lower" quoted-identifiers="lower" />
++      <secret-storage>master_key</secret-storage>
++      <user-name>root</user-name>
++      <schema-mapping>
++        <introspection-scope>
++          <node kind="schema" qname="kuopan_database" />
++        </introspection-scope>
++      </schema-mapping>
+     </data-source>
+     <data-source name="KuoPanRedis" uuid="88affee9-9cda-42ce-804c-eb09028daba0">
+       <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="REDIS" />
++      <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed" />
++      <auth-provider>no-auth</auth-provider>
+       <schema-mapping />
+     </data-source>
+     <data-source name="kuopan_database@127.0.0.1" uuid="aac0f85a-e4cf-4a8e-9fb3-d4a84a7516a0">
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"a4c24853-64ea-4a2b-9320-bea35a4f2bef\" name=\"更改\" comment=\"\">\r\n      <change afterPath=\"$PROJECT_DIR$/.idea/sqldialects.xml\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/kuopan-front/src/components/Preview.vue\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/src/main/java/com/kuopan/Component/FileProcessTask.java\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/src/main/java/com/kuopan/Config/WebMvcConfig.java\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/src/main/java/com/kuopan/Controller/RecycleController.java\" afterDir=\"false\" />\r\n      <change afterPath=\"$PROJECT_DIR$/src/main/java/com/kuopan/Util/FfmpegUtils.java\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/dataSources.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/dataSources.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/misc.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/misc.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/vcs.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/vcs.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/.gitignore\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/.gitignore\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/README.md\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/README.md\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/index.html\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/index.html\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/package-lock.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/package-lock.json\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/package.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/package.json\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/public/hls.min.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/public/hls.min.js\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/App.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/App.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/assets/base.scss\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/assets/base.scss\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/assets/icon/demo.css\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/assets/icon/demo.css\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/assets/icon/demo_index.html\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/assets/icon/demo_index.html\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/assets/icon/iconfont.css\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/assets/icon/iconfont.css\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/assets/icon/iconfont.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/assets/icon/iconfont.json\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/components/Dialog.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/components/Dialog.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/main.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/main.js\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/router/index.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/router/index.js\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/utils/Confirm.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/utils/Confirm.js\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/utils/Message.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/utils/Message.js\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/utils/Request.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/utils/Request.js\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/utils/Verify.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/utils/Verify.js\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/Framework.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/Framework.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/Login.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/Login.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/UpdatePassword.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/UpdatePassword.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/admin/FileList.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/admin/FileList.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/admin/SysSettings.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/admin/SysSettings.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/admin/UserList.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/admin/UserList.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/main/Main.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/main/Main.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/recycle/Recycle.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/recycle/Recycle.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/src/views/share/Share.vue\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/src/views/share/Share.vue\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/kuopan-front/vite.config.js\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/kuopan-front/vite.config.js\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/pom.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/pom.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisComponent.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisComponent.java\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/com/kuopan/DAO/UserInfoMapper.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/com/kuopan/DAO/UserInfoMapper.java\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/main/resources/application.properties\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/resources/application.properties\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Vue Composition API Component\" />\r\n        <option value=\"Class\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;VegetableoVoBird&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/Dioxideforsure/GraduationDesign&quot;,\r\n    &quot;accountId&quot;: &quot;7b9d0c90-df87-434a-a5a8-2f828ba0d667&quot;\r\n  }\r\n}</component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;customColor&quot;: &quot;&quot;,\r\n  &quot;associatedIndex&quot;: 2\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"3BnlpRYQCcJJ3XAbWSAJCFLUTXM\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,\r\n    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,\r\n    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,\r\n    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,\r\n    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,\r\n    &quot;Spring Boot.KuoPanApplication.executor&quot;: &quot;Run&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;login-pages 上的 #1&quot;,\r\n    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,\r\n    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,\r\n    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\r\n    &quot;ts.external.directory.path&quot;: &quot;C:\\\\Users\\\\lenovo\\\\AppData\\\\Local\\\\Programs\\\\IntelliJ IDEA Ultimate\\\\plugins\\\\javascript-plugin\\\\jsLanguageServicesImpl\\\\external&quot;,\r\n    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;\r\n  },\r\n  &quot;keyToStringList&quot;: {\r\n    &quot;vue.recent.templates&quot;: [\r\n      &quot;Vue Composition API Component&quot;\r\n    ]\r\n  }\r\n}</component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"KuoPanApplication\" type=\"SpringBootApplicationConfigurationType\" factoryName=\"Spring Boot\" nameIsGenerated=\"true\">\r\n      <module name=\"KuoPan\" />\r\n      <option name=\"SPRING_BOOT_MAIN_CLASS\" value=\"com.kuopan.KuoPanApplication\" />\r\n      <method v=\"2\">\r\n        <option name=\"Make\" enabled=\"true\" />\r\n      </method>\r\n    </configuration>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-jdk-9f38398b9061-39b83d9b5494-intellij.indexing.shared.core-IU-241.18034.62\" />\r\n        <option value=\"bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-IU-241.18034.62\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"应用程序级\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"默认任务\">\r\n      <changelist id=\"a4c24853-64ea-4a2b-9320-bea35a4f2bef\" name=\"更改\" comment=\"\" />\r\n      <created>1775132908821</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1775132908821</updated>\r\n      <workItem from=\"1775132910917\" duration=\"2747000\" />\r\n      <workItem from=\"1775539993345\" duration=\"102000\" />\r\n      <workItem from=\"1775544505934\" duration=\"7943000\" />\r\n      <workItem from=\"1775623574787\" duration=\"12556000\" />\r\n      <workItem from=\"1775659445249\" duration=\"92000\" />\r\n      <workItem from=\"1775659580375\" duration=\"3002000\" />\r\n      <workItem from=\"1775662685763\" duration=\"3348000\" />\r\n      <workItem from=\"1775700767251\" duration=\"3207000\" />\r\n    </task>\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n</project>
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/.idea/workspace.xml	(date 1775991900536)
+@@ -4,60 +4,36 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="a4c24853-64ea-4a2b-9320-bea35a4f2bef" name="更改" comment="">
+-      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/Preview.vue" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/FileProcessTask.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Config/WebMvcConfig.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/RecycleController.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/FfmpegUtils.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/.gitignore" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/README.md" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/index.html" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/package-lock.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/package.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/public/hls.min.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/public/hls.min.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/App.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/assets/base.scss" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/assets/base.scss" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/assets/icon/demo.css" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/assets/icon/demo.css" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/assets/icon/demo_index.html" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/assets/icon/demo_index.html" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/assets/icon/iconfont.css" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/assets/icon/iconfont.css" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/assets/icon/iconfont.json" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/assets/icon/iconfont.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/components/Dialog.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/components/Dialog.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/main.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/router/index.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/utils/Confirm.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Confirm.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/utils/Message.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Message.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/utils/Request.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Request.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/utils/Verify.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Verify.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/Framework.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/Framework.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/Login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/Login.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/UpdatePassword.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/UpdatePassword.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/admin/FileList.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/admin/FileList.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/admin/SysSettings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/admin/SysSettings.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/admin/UserList.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/admin/UserList.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/main/Main.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/main/Main.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/recycle/Recycle.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/recycle/Recycle.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/share/Share.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/share/Share.vue" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/kuopan-front/vite.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/vite.config.js" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisComponent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisComponent.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/UserInfoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/UserInfoMapper.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
++    <list default="true" id="a4c24853-64ea-4a2b-9320-bea35a4f2bef" name="更改" comment="更改">
++      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/Table.vue" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/dto/UploadFilePropertiesDto.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/dto/UploadResultDto.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/FileInfoService.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/db-forest-config.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/db-forest-config.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/database/file_upload_design.sql" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/database/file_upload_design.sql" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/FileProcessTask.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/FileProcessTask.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisUtils.java" beforeDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/FileInfoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/FileInfoController.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/FileInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/FileInfo.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/constants/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/constants/Constants.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/FfmpegUtils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/FfmpegUtils.java" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+     <option name="LAST_RESOLUTION" value="IGNORE" />
++  </component>
++  <component name="CompilerWorkspaceConfiguration">
++    <option name="MAKE_PROJECT_ON_SAVE" value="true" />
+   </component>
+   <component name="FileTemplateManagerImpl">
+     <option name="RECENT_TEMPLATES">
+       <list>
+         <option value="Vue Composition API Component" />
++        <option value="Interface" />
+         <option value="Class" />
+       </list>
+     </option>
+@@ -77,42 +53,53 @@
+     &quot;accountId&quot;: &quot;7b9d0c90-df87-434a-a5a8-2f828ba0d667&quot;
+   }
+ }</component>
++  <component name="JRebelWorkspace">
++    <option name="jrebelEnabledAutocompile" value="true" />
++  </component>
+   <component name="ProjectColorInfo">{
+   &quot;customColor&quot;: &quot;&quot;,
+   &quot;associatedIndex&quot;: 2
+ }</component>
+   <component name="ProjectId" id="3BnlpRYQCcJJ3XAbWSAJCFLUTXM" />
++  <component name="ProjectLevelVcsManager">
++    <ConfirmationsSetting value="2" id="Add" />
++  </component>
+   <component name="ProjectViewState">
+     <option name="hideEmptyMiddlePackages" value="true" />
+     <option name="showLibraryContents" value="true" />
+   </component>
+-  <component name="PropertiesComponent">{
+-  &quot;keyToString&quot;: {
+-    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+-    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+-    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+-    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+-    &quot;Spring Boot.KuoPanApplication.executor&quot;: &quot;Run&quot;,
+-    &quot;git-widget-placeholder&quot;: &quot;login-pages 上的 #1&quot;,
+-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+-    &quot;ts.external.directory.path&quot;: &quot;C:\\Users\\lenovo\\AppData\\Local\\Programs\\IntelliJ IDEA Ultimate\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
++  <component name="PropertiesComponent"><![CDATA[{
++  "keyToString": {
++    "RequestMappingsPanelOrder0": "0",
++    "RequestMappingsPanelOrder1": "1",
++    "RequestMappingsPanelWidth0": "75",
++    "RequestMappingsPanelWidth1": "75",
++    "RunOnceActivity.ShowReadmeOnStart": "true",
++    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
++    "RunOnceActivity.git.unshallow": "true",
++    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
++    "Spring Boot.KuoPanApplication.executor": "JRebel Executor",
++    "git-widget-placeholder": "master",
++    "ignore.virus.scanning.warn.message": "true",
++    "kotlin-language-version-configured": "true",
++    "node.js.detected.package.eslint": "true",
++    "node.js.detected.package.tslint": "true",
++    "node.js.selected.package.eslint": "(autodetect)",
++    "node.js.selected.package.tslint": "(autodetect)",
++    "nodejs_package_manager_path": "npm",
++    "settings.editor.selected.configurable": "inlay.hints",
++    "ts.external.directory.path": "D:\\Program Files\\JetBrains\\IntelliJ IDEA 2025.3.1.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
++    "vue.rearranger.settings.migration": "true"
+   },
+-  &quot;keyToStringList&quot;: {
+-    &quot;vue.recent.templates&quot;: [
+-      &quot;Vue Composition API Component&quot;
++  "keyToStringList": {
++    "vue.recent.templates": [
++      "Vue Composition API Component"
+     ]
+   }
+-}</component>
++}]]></component>
++  <component name="RebelAgentSelection">
++    <selection>jr</selection>
++  </component>
+   <component name="RunManager">
+     <configuration name="KuoPanApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+       <module name="KuoPan" />
+@@ -152,4 +139,85 @@
+   <component name="TypeScriptGeneratedFilesManager">
+     <option name="version" value="3" />
+   </component>
++  <component name="Vcs.Log.Tabs.Properties">
++    <option name="TAB_STATES">
++      <map>
++        <entry key="MAIN">
++          <value>
++            <State />
++          </value>
++        </entry>
++      </map>
++    </option>
++  </component>
++  <component name="XDebuggerManager">
++    <breakpoint-manager>
++      <breakpoints>
++        <line-breakpoint type="java-line">
++          <url>file://$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java</url>
++          <line>10</line>
++          <option name="timeStamp" value="4" />
++        </line-breakpoint>
++        <line-breakpoint type="java-line">
++          <url>file://$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/UserInfoServiceImpl.java</url>
++          <line>97</line>
++          <option name="timeStamp" value="17" />
++        </line-breakpoint>
++        <line-breakpoint type="java-method">
++          <url>file://$PROJECT_DIR$/src/main/java/com/kuopan/Controller/UserInfoController.java</url>
++          <line>114</line>
++          <properties class="com.kuopan.Controller.UserInfoController">
++            <option name="EMULATED" value="true" />
++            <option name="WATCH_EXIT" value="false" />
++          </properties>
++          <option name="timeStamp" value="13" />
++        </line-breakpoint>
++        <line-breakpoint type="java-method">
++          <url>file://$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/UserInfoServiceImpl.java</url>
++          <line>87</line>
++          <properties class="com.kuopan.Service.impl.UserInfoServiceImpl">
++            <option name="EMULATED" value="true" />
++            <option name="WATCH_EXIT" value="false" />
++          </properties>
++          <option name="timeStamp" value="15" />
++        </line-breakpoint>
++        <line-breakpoint type="java-method">
++          <url>file://$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/EmailCodeServiceImpl.java</url>
++          <line>90</line>
++          <properties class="com.kuopan.Service.impl.EmailCodeServiceImpl">
++            <option name="EMULATED" value="true" />
++            <option name="WATCH_EXIT" value="false" />
++          </properties>
++          <option name="timeStamp" value="16" />
++        </line-breakpoint>
++        <line-breakpoint type="java-method">
++          <url>file://$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/UserInfoServiceImpl.java</url>
++          <line>110</line>
++          <properties class="com.kuopan.Service.impl.UserInfoServiceImpl">
++            <option name="EMULATED" value="true" />
++            <option name="WATCH_EXIT" value="false" />
++          </properties>
++          <option name="timeStamp" value="18" />
++        </line-breakpoint>
++        <line-breakpoint type="java-method">
++          <url>file://$PROJECT_DIR$/src/main/java/com/kuopan/Controller/UserInfoController.java</url>
++          <line>160</line>
++          <properties class="com.kuopan.Controller.UserInfoController">
++            <option name="EMULATED" value="true" />
++            <option name="WATCH_EXIT" value="false" />
++          </properties>
++          <option name="timeStamp" value="21" />
++        </line-breakpoint>
++        <line-breakpoint type="java-method">
++          <url>file://$PROJECT_DIR$/src/main/java/com/kuopan/Controller/UserInfoController.java</url>
++          <line>148</line>
++          <properties class="com.kuopan.Controller.UserInfoController">
++            <option name="EMULATED" value="true" />
++            <option name="WATCH_EXIT" value="false" />
++          </properties>
++          <option name="timeStamp" value="22" />
++        </line-breakpoint>
++      </breakpoints>
++    </breakpoint-manager>
++  </component>
+ </project>
+\ No newline at end of file
+Index: src/main/java/com/kuopan/Util/FfmpegUtils.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.kuopan.Util;\r\n\r\nimport com.kuopan.Exception.BusinessException;\r\nimport org.slf4j.Logger;\r\nimport org.slf4j.LoggerFactory;\r\n\r\nimport java.io.BufferedReader;\r\nimport java.io.InputStream;\r\nimport java.io.InputStreamReader;\r\n\r\npublic class FfmpegUtils {\r\n    private static final Logger logger = LoggerFactory.getLogger(FfmpegUtils.class);\r\n\r\n    // 基础的命令行执行方法\r\n    public static void executeCommand(String command) {\r\n        try {\r\n            logger.info(\"开始执行FFmpeg命令: {}\", command);\r\n            Process process = Runtime.getRuntime().exec(command);\r\n            // 必须清空标准输出和错误输出流，否则会导致进程阻塞卡死\r\n            clearStream(process.getInputStream());\r\n            clearStream(process.getErrorStream());\r\n            process.waitFor();\r\n            logger.info(\"FFmpeg命令执行完成\");\r\n        } catch (Exception e) {\r\n            logger.error(\"FFmpeg命令执行失败: {}\", command, e);\r\n            throw new BusinessException(\"视频处理失败\");\r\n        }\r\n    }\r\n\r\n    private static void clearStream(InputStream stream) {\r\n        new Thread(() -> {\r\n            try (BufferedReader br = new BufferedReader(new InputStreamReader(stream, \"GBK\"))) { // Windows环境下通常是GBK\r\n                String line;\r\n                while ((line = br.readLine()) != null) {\r\n                    // 可以取消注释下面这行来查看 FFmpeg 的实时转码日志\r\n                    // logger.debug(line);\r\n                }\r\n            } catch (Exception e) {\r\n                logger.error(\"读取进程流异常\", e);\r\n            }\r\n        }).start();\r\n    }\r\n\r\n    /**\r\n     * 生成视频缩略图 (截取第1秒)\r\n     */\r\n    public static void createCover(String videoPath, String coverPath) {\r\n        // 注意路径两边加双引号，防止路径中存在空格导致命令解析失败\r\n        String cmd = String.format(\"ffmpeg -y -i \\\"%s\\\" -ss 00:00:01 -vframes 1 -vf scale=150:-1 \\\"%s\\\"\", videoPath, coverPath);\r\n        executeCommand(cmd);\r\n    }\r\n\r\n    /**\r\n     * 将视频切片为 m3u8 (HLS格式)\r\n     */\r\n    public static void transferToM3u8(String videoPath, String tsFolder) {\r\n        String m3u8Path = tsFolder + \"index.m3u8\";\r\n        String cmd = String.format(\"ffmpeg -y -i \\\"%s\\\" -c:v libx264 -c:a aac -strict -2 -f hls -hls_time 10 -hls_list_size 0 -hls_segment_filename \\\"%s%%04d.ts\\\" \\\"%s\\\"\",\r\n                videoPath, tsFolder, m3u8Path);\r\n        executeCommand(cmd);\r\n    }\r\n}
+===================================================================
+diff --git a/src/main/java/com/kuopan/Util/FfmpegUtils.java b/src/main/java/com/kuopan/Util/FfmpegUtils.java
+--- a/src/main/java/com/kuopan/Util/FfmpegUtils.java	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/src/main/java/com/kuopan/Util/FfmpegUtils.java	(date 1775985220887)
+@@ -1,28 +1,27 @@
+ package com.kuopan.Util;
+ 
+ import com.kuopan.Exception.BusinessException;
+-import org.slf4j.Logger;
+-import org.slf4j.LoggerFactory;
++import lombok.extern.slf4j.Slf4j;
+ 
+ import java.io.BufferedReader;
+ import java.io.InputStream;
+ import java.io.InputStreamReader;
+ 
++@Slf4j
+ public class FfmpegUtils {
+-    private static final Logger logger = LoggerFactory.getLogger(FfmpegUtils.class);
+ 
+     // 基础的命令行执行方法
+     public static void executeCommand(String command) {
+         try {
+-            logger.info("开始执行FFmpeg命令: {}", command);
++            log.info("开始执行FFmpeg命令: {}", command);
+             Process process = Runtime.getRuntime().exec(command);
+             // 必须清空标准输出和错误输出流，否则会导致进程阻塞卡死
+             clearStream(process.getInputStream());
+             clearStream(process.getErrorStream());
+             process.waitFor();
+-            logger.info("FFmpeg命令执行完成");
++            log.info("FFmpeg命令执行完成");
+         } catch (Exception e) {
+-            logger.error("FFmpeg命令执行失败: {}", command, e);
++            log.error("FFmpeg命令执行失败: {}", command, e);
+             throw new BusinessException("视频处理失败");
+         }
+     }
+@@ -33,10 +32,10 @@
+                 String line;
+                 while ((line = br.readLine()) != null) {
+                     // 可以取消注释下面这行来查看 FFmpeg 的实时转码日志
+-                    // logger.debug(line);
++                    // log.debug(line);
+                 }
+             } catch (Exception e) {
+-                logger.error("读取进程流异常", e);
++                log.error("读取进程流异常", e);
+             }
+         }).start();
+     }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.kuopan.Component.RedisComponent;
 import com.kuopan.Config.AppConfig;
+import com.kuopan.DAO.FileInfoMapper;
 import com.kuopan.Entity.UserInfo;
 import com.kuopan.DAO.UserInfoMapper;
 import com.kuopan.Entity.constants.Constants;
@@ -38,6 +39,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Resource
     private UserInfoMapper userInfoMapper;
+
+    @Resource
+    private FileInfoMapper fileInfoMapper;
 
     @Resource
     private AppConfig appConfig;
@@ -75,8 +79,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         // User Space
         UserSpaceDto userSpaceDto = new UserSpaceDto();
-        // TODO: Complete the detailed used space from database
-//        userSpaceDto.setUseSpace();
+        userSpaceDto.setUseSpace(fileInfoMapper.selectUsedSpace(user.getUserId()));
         userSpaceDto.setTotalSpace(userSpaceDto.getTotalSpace());
         redisComponent.saveUserUsedSpace(user.getUserId(), userSpaceDto);
 

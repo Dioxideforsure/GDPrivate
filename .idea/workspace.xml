@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="82749053-4fb4-44fe-a8b3-0a4a7364bb03" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/assets/file.list.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/Icon.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/Table.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Utils.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/FileInfoController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/FileInfoMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/FileInfo.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/dto/UploadResultDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/FileCategoryEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/FileDelFlag.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/FileInfoStatus.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/UploadStatusEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Mappers/FileInfoMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/IFileInfoService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/GUIDGenerate.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/vo/FileInfoVO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/Framework.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/Framework.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/main/Main.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/main/Main.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisComponent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisComponent.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/UserInfoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/UserInfoController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/UserInfoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/UserInfoMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/constants/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/constants/Constants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/ResponseCodeEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/ResponseCodeEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/UserInfoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/UserInfoServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/StringUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/StringUtil.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CompilerWorkspaceConfiguration">
+    <option name="MAKE_PROJECT_ON_SAVE" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Vue Composition API Component" />
+        <option value="JavaScript File" />
+        <option value="Class" />
+        <option value="Enum" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {}
+}</component>
+  <component name="GitHubPullRequestState">{
+  &quot;prStates&quot;: [
+    {
+      &quot;id&quot;: {
+        &quot;id&quot;: &quot;PR_kwDOQ5otzc7SjNup&quot;,
+        &quot;number&quot;: 4
+      },
+      &quot;lastSeen&quot;: 1776238722165
+    }
+  ]
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Dioxideforsure/GraduationDesign.git&quot;,
+    &quot;accountId&quot;: &quot;b51112f4-9e6e-4d1b-982d-86a1ce54f398&quot;
+  }
+}</component>
+  <component name="JRebelWorkspace">
+    <option name="jrebelEnabledAutocompile" value="true" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="3CItL5tpwTiCFPAL9addluasryI" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.MyBatisGenerator.executor&quot;: &quot;Run&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.KuoPanApplication.executor&quot;: &quot;JRebel Debug&quot;,
+    &quot;database.data.extractors.current.export.id&quot;: &quot;SQL Updates&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/ZXY/IdeaProjects/GraduationDesign&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;D:\\Program Files\\JetBrains\\IntelliJ IDEA 2025.3.1.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;vue.recent.templates&quot;: [
+      &quot;Vue Composition API Component&quot;
+    ]
+  }
+}</component>
+  <component name="RebelAgentSelection">
+    <selection>jr</selection>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\Service\impl" />
+      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\DAO" />
+      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\Mappers" />
+      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\Controller" />
+      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\Entity" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Application.MyBatisGenerator">
+    <configuration name="MyBatisGenerator" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.kuopan.Util.MyBatisGenerator" />
+      <module name="KuoPan" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.kuopan.Util.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="KuoPanApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <module name="KuoPan" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.kuopan.KuoPanApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.MyBatisGenerator" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-26cb7f24e5b0-intellij.indexing.shared.core-IU-253.29346.240" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.29346.240" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="82749053-4fb4-44fe-a8b3-0a4a7364bb03" name="Changes" comment="" />
+      <created>1776084856612</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1776084856612</updated>
+      <workItem from="1776084859315" duration="6953000" />
+      <workItem from="1776143899875" duration="9227000" />
+      <workItem from="1776228709220" duration="10109000" />
+      <workItem from="1776238933361" duration="542000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

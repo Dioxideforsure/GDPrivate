@@ -16,4 +16,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     // Apply the change from XML, when adding space or reducing space.
     int updateRemainSpaceByGUID(@Param("id") String id, @Param("occu_space") Long occuSpace);
+
+
 }

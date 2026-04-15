@@ -1,5 +1,6 @@
 package com.kuopan.Util;
 
+import com.kuopan.Entity.constants.Constants;
 import org.apache.commons.lang3.RandomStringUtils;
 
 public class StringUtil {
@@ -21,6 +22,34 @@ public class StringUtil {
             return true;
         }
         return false;
+    }
+
+    public static String getFileNameNoSuffix(String fileName) {
+        Integer index = fileName.lastIndexOf('.');
+        if (index == -1) {
+            return fileName;
+        }
+        fileName = fileName.substring(0, index);
+        return fileName;
+    }
+
+    public static String getFileNameSuffix(String fileName) {
+        Integer index = fileName.lastIndexOf('.');
+        if (index == -1) {
+            return "";
+        }
+        String suffix = fileName.substring(index);
+        return suffix;
+    }
+
+
+
+    public static String rename(String filename) {
+        String fileNameReal = getFileNameNoSuffix(filename);
+        String suffix = getFileNameSuffix(filename);
+        StringBuilder sb = new StringBuilder(fileNameReal);
+        sb.append(" ").append(getRandomNumber(Constants.FIVE)).append('.').append(suffix);
+        return sb.toString();
     }
 
 }

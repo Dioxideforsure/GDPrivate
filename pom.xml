@@ -145,6 +145,12 @@
       <artifactId>spring-boot-starter-mail</artifactId>
     </dependency>
 
+      <!--Mybatis class generator-->
+    <dependency>
+      <groupId>com.baomidou</groupId>
+      <artifactId>mybatis-plus-generator</artifactId>
+      <version>3.5.0</version>
+    </dependency>
 
 
   </dependencies>

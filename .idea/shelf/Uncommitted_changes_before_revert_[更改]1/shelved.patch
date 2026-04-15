@@ -1,0 +1,259 @@
+Index: src/main/java/com/kuopan/Component/RedisUtils.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/kuopan/Component/RedisUtils.java b/src/main/java/com/kuopan/Component/RedisUtils.java
+deleted file mode 100644
+--- a/src/main/java/com/kuopan/Component/RedisUtils.java	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ /dev/null	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
+@@ -1,74 +0,0 @@
+-package com.kuopan.Component;
+-
+-import lombok.extern.slf4j.Slf4j;
+-import org.springframework.data.redis.core.RedisTemplate;
+-import org.springframework.stereotype.Component;
+-import org.springframework.util.CollectionUtils;
+-
+-import javax.annotation.Resource;
+-import java.util.Collection;
+-import java.util.concurrent.TimeUnit;
+-
+-@Component("redisUtils")
+-@Slf4j
+-public class RedisUtils<V> {
+-
+-    @Resource
+-    private RedisTemplate<String, V> redisTemplate;
+-
+-    /**
+-     * Delete the cache
+-     *
+-     * @param key One value ore more
+-     */
+-    public void delete(String... key) {
+-        if (key != null && key.length > 0) {
+-            if (key.length == 1) {
+-                redisTemplate.delete(key[0]);
+-            } else {
+-                redisTemplate.delete((Collection<String>) CollectionUtils.arrayToList(key));
+-            }
+-        }
+-    }
+-
+-    public V get(String key) {
+-        if (key == null) {
+-            return null;
+-        }
+-        return redisTemplate.opsForValue().get(key);
+-    }
+-
+-    /**
+-     * Put normal cache in
+-     *
+-     * @param key
+-     * @param value
+-     * @return true for success else @return false for failure
+-     */
+-    public boolean set(String key, V value) {
+-        try {
+-            redisTemplate.opsForValue().set(key, value);
+-            return true;
+-        } catch (Exception e) {
+-            log.error("Put Redis key:{}, value:{} failure", key, value);
+-            return false;
+-        }
+-    }
+-
+-    /**
+-     * Put normal cache in and set timer
+-     */
+-    public boolean setT(String key, V value, long time) {
+-        try {
+-            if (time > 0) {
+-                redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);
+-            } else {
+-                set(key, value);
+-            }
+-            return true;
+-        } catch (Exception e) {
+-            log.error("Put Redis key:{}, value:{} failure", key, value);
+-            return false;
+-        }
+-    }
+-}
+Index: src/main/java/com/kuopan/Entity/dto/UploadFilePropertiesDto.java
+===================================================================
+diff --git a/src/main/java/com/kuopan/Entity/dto/UploadFilePropertiesDto.java b/src/main/java/com/kuopan/Entity/dto/UploadFilePropertiesDto.java
+new file mode 100644
+--- /dev/null	(date 1775984769631)
++++ b/src/main/java/com/kuopan/Entity/dto/UploadFilePropertiesDto.java	(date 1775984769631)
+@@ -0,0 +1,29 @@
++package com.kuopan.Entity.dto;
++
++import lombok.Getter;
++import lombok.Setter;
++import org.springframework.web.multipart.MultipartFile;
++
++@Getter
++@Setter
++public class UploadFilePropertiesDto {
++
++    private String fileId;
++    private MultipartFile file;
++    private String fileName;
++    private String filePid;
++    private String fileMd5;
++    private Integer chunkIndex;
++    private Integer chunks;
++
++    public UploadFilePropertiesDto(String fileId, MultipartFile file, String fileName, String filePid, String fileMd5, Integer chunkIndex, Integer chunks) {
++        this.fileId = fileId;
++        this.file = file;
++        this.fileName = fileName;
++        this.filePid = filePid;
++        this.fileMd5 = fileMd5;
++        this.chunkIndex = chunkIndex;
++        this.chunks = chunks;
++    }
++}
++
+Index: src/main/java/com/kuopan/Entity/dto/UploadResultDto.java
+===================================================================
+diff --git a/src/main/java/com/kuopan/Entity/dto/UploadResultDto.java b/src/main/java/com/kuopan/Entity/dto/UploadResultDto.java
+new file mode 100644
+--- /dev/null	(date 1775984130277)
++++ b/src/main/java/com/kuopan/Entity/dto/UploadResultDto.java	(date 1775984130277)
+@@ -0,0 +1,16 @@
++package com.kuopan.Entity.dto;
++
++import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
++import lombok.Getter;
++import lombok.Setter;
++
++import java.io.Serializable;
++
++@Getter
++@Setter
++@JsonIgnoreProperties(ignoreUnknown = true)
++public class UploadResultDto implements Serializable {
++
++    private String fileId;
++    private String status;
++}
+Index: .idea/db-forest-config.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"db-tree-configuration\">\r\n    <option name=\"data\" value=\"----------------------------------------&#10;1:0:fd3a7be5-6ba6-4d99-9d8b-0be65ed010da&#10;2:0:88affee9-9cda-42ce-804c-eb09028daba0&#10;\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/db-forest-config.xml b/.idea/db-forest-config.xml
+--- a/.idea/db-forest-config.xml	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/.idea/db-forest-config.xml	(date 1775968769737)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="db-tree-configuration">
+-    <option name="data" value="----------------------------------------&#10;1:0:fd3a7be5-6ba6-4d99-9d8b-0be65ed010da&#10;2:0:88affee9-9cda-42ce-804c-eb09028daba0&#10;" />
++    <option name="data" value="----------------------------------------&#10;1:0:fd3a7be5-6ba6-4d99-9d8b-0be65ed010da&#10;2:0:88affee9-9cda-42ce-804c-eb09028daba0&#10;3:0:aac0f85a-e4cf-4a8e-9fb3-d4a84a7516a0&#10;" />
+   </component>
+ </project>
+\ No newline at end of file
+Index: src/main/java/com/kuopan/Entity/constants/Constants.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.kuopan.Entity.constants;\r\n\r\npublic class Constants {\r\n    public static final String CHECK_CODE_KEY = \"check_code_key\";\r\n    public static final String CHECK_CODE_KEY_EMAIL = \"check_code_key_email\";\r\n    public static final Integer LENGTH_5 = 5;\r\n    public static final Integer ZERO = 0;\r\n    public static final Integer ONE = 0;\r\n    public static final Integer TWO = 0;\r\n    public static final Integer THREE = 3;\r\n    public static final Integer FOUR = 4;\r\n    public static final Integer FIVE = 5;\r\n    public static final Integer SIX = 6;\r\n    public static final Integer SEVEN = 7;\r\n    public static final Integer EIGHT = 8;\r\n    public static final Integer NINE = 9;\r\n    public static final String REDIS_KEY_SYS_SETTINGS = \"Kuopan:sysSettings\";\r\n    public static final String REDIS_KEY_PREFIX_EMAIL = \"verify:email:\";\r\n    public static final String REDIS_KEY_USER_SPACE_USE = \"Kuopan:user:spaceuse:\";\r\n    public static final Long MB = 1024 * 1024l;\r\n    public static final String SESSION_KEY = \"session_key\";\r\n    public static final String FILE_FOLDER_FILE = \"/file/\";\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/kuopan/Entity/constants/Constants.java b/src/main/java/com/kuopan/Entity/constants/Constants.java
+--- a/src/main/java/com/kuopan/Entity/constants/Constants.java	(revision c682d513b5508f11278d8ef6f5412f1ade9cee05)
++++ b/src/main/java/com/kuopan/Entity/constants/Constants.java	(date 1775985613387)
+@@ -5,8 +5,8 @@
+     public static final String CHECK_CODE_KEY_EMAIL = "check_code_key_email";
+     public static final Integer LENGTH_5 = 5;
+     public static final Integer ZERO = 0;
+-    public static final Integer ONE = 0;
+-    public static final Integer TWO = 0;
++    public static final Integer ONE = 1;
++    public static final Integer TWO = 2;
+     public static final Integer THREE = 3;
+     public static final Integer FOUR = 4;
+     public static final Integer FIVE = 5;
+@@ -14,6 +14,7 @@
+     public static final Integer SEVEN = 7;
+     public static final Integer EIGHT = 8;
+     public static final Integer NINE = 9;
++    public static final Integer TEN = 10;
+     public static final String REDIS_KEY_SYS_SETTINGS = "Kuopan:sysSettings";
+     public static final String REDIS_KEY_PREFIX_EMAIL = "verify:email:";
+     public static final String REDIS_KEY_USER_SPACE_USE = "Kuopan:user:spaceuse:";
+Index: src/main/java/com/kuopan/Service/FileInfoService.java
+===================================================================
+diff --git a/src/main/java/com/kuopan/Service/FileInfoService.java b/src/main/java/com/kuopan/Service/FileInfoService.java
+new file mode 100644
+--- /dev/null	(date 1775984324371)
++++ b/src/main/java/com/kuopan/Service/FileInfoService.java	(date 1775984324371)
+@@ -0,0 +1,13 @@
++package com.kuopan.Service;
++
++import com.baomidou.mybatisplus.extension.service.IService;
++import com.kuopan.Entity.FileInfo;
++import com.kuopan.Entity.dto.SessionWebUserDto;
++import com.kuopan.Entity.dto.UploadFilePropertiesDto;
++import com.kuopan.Entity.dto.UploadResultDto;
++import org.springframework.web.multipart.MultipartFile;
++
++public interface FileInfoService extends IService<FileInfo> {
++
++    UploadResultDto uploadFile(SessionWebUserDto webUserDto, UploadFilePropertiesDto fileDto);
++}
+Index: kuopan-front/src/components/Table.vue
+===================================================================
+diff --git a/kuopan-front/src/components/Table.vue b/kuopan-front/src/components/Table.vue
+new file mode 100644
+--- /dev/null	(date 1775970006545)
++++ b/kuopan-front/src/components/Table.vue	(date 1775970006545)
+@@ -0,0 +1,40 @@
++<script setup>
++
++</script>
++
++<template>
++  <div>
++    <el-table
++        ref="dataTable"
++        :data="dataSource.list || []"
++        :height="tableHeight"
++        :stripe="options.stripe"
++        :border="options.border"
++        header-row-class-name="table-header-row"
++        highlight-current-row
++        @row-click="handleRowClick"
++        @selection-change="handleSelectionChange">
++
++      <!--Selection box-->
++      <el-table-column
++          v-if="options.selectType && options.selectType == 'checkbox'"
++          type="selection"
++          width="50"
++          align="center">
++      </el-table-column>
++
++
++        <el-table-column
++            v-if="options.showIndex"
++            label="序号"
++            type="index"
++            width="60"
++            align="center"></el-table-column>
++
++    </el-table>
++  </div>
++</template>
++
++<style scoped lang="scss">
++
++</style>
+\ No newline at end of file
