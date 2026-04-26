@@ -22,7 +22,7 @@ const router = createRouter({
                 {
                     path: '/main/:category',
                     name: '首页',
-                    meta:{
+                    meta: {
                         needLogin: true,
                         menuCode: "main",
                     },
@@ -31,7 +31,7 @@ const router = createRouter({
                 {
                     path: '/myshare',
                     name: '我的分享',
-                    meta:{
+                    meta: {
                         needLogin: true,
                         menuCode: "share"
                     },
@@ -40,7 +40,7 @@ const router = createRouter({
                 {
                     path: '/recycle',
                     name: '回收站',
-                    meta:{
+                    meta: {
                         needLogin: true,
                         menuCode: "recycle",
                     },
@@ -49,7 +49,7 @@ const router = createRouter({
                 {
                     path: '/settings/sysSetting',
                     name: '系统设置',
-                    meta:{
+                    meta: {
                         needLogin: true,
                         menuCode: "settings",
                     },
@@ -58,7 +58,7 @@ const router = createRouter({
                 {
                     path: '/settings/userList',
                     name: '用户管理',
-                    meta:{
+                    meta: {
                         needLogin: true,
                         menuCode: "settings",
                     },
@@ -67,14 +67,24 @@ const router = createRouter({
                 {
                     path: '/settings/fileList',
                     name: '用户文件',
-                    meta:{
+                    meta: {
                         needLogin: true,
                         menuCode: "settings",
                     },
-                    component:() => import("@/views/admin/FileList.vue")
+                    component: () => import("@/views/admin/FileList.vue")
                 }
             ]
-        }
+        },
+        {
+            path: '/shareCheck/:shareId',
+            name: '分享校验',
+            component: () => import("@/views/webShare/ShareCheck.vue"),
+        },
+        {
+            path: '/share/:shareId',
+            name: '分享',
+            component: () => import("@/views/webShare/Share.vue"),
+        },
     ]
 })
 

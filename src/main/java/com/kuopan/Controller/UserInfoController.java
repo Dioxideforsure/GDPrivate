@@ -98,8 +98,6 @@ public class UserInfoController extends BaseController {
                 throw new BusinessException("图形验证码错误");
             }
             SessionWebUserDto sessionWebUserDto = userInfoService.login(email, password);
-            System.out.println("Notice:" + email + password);
-            System.out.println("Notice:" + sessionWebUserDto.getUserId());
             session.setAttribute(Constants.SESSION_KEY, sessionWebUserDto);
             return ResponseVO.success(sessionWebUserDto);
         } finally {

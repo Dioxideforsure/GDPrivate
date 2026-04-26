@@ -41,7 +41,7 @@ public class SHAUtil {
     }
 
     public static void main(String[] args) {
-        System.out.println(SHAEncrypt(SHAEnum.SHA_256, "12345zlk"));
+        System.out.println(SHAEncrypt(SHAEnum.SHA_256, "114514hajimi"));
     }
 
 }

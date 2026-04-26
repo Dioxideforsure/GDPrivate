@@ -17,10 +17,16 @@ public interface IUserInfoService extends IService<UserInfo> {
     // Login method
     SessionWebUserDto login(String email, String password);
 
+    // UserId to search
+    UserInfo selectByUserId(String userId);
+
     // Reset password
     void resetPassword(String email, String password, String emailCode);
 
     // Update password
     void updatePassword(SessionWebUserDto userDto, String oldPassword, String password );
 
+    void updateUserStatus(String userId, Boolean status);
+
+    void changeUserSpace(String userId, Integer changeSpace);
 }

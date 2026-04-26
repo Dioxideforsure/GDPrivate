@@ -9,7 +9,7 @@
         <el-popover
             :width="800"
             trigger="click"
-            :v-model:visible="true"
+            v-model:visible="showUploader"
             :offset="20"
             transition="none"
             :hide-after="0"
@@ -19,7 +19,7 @@
             <span class="iconfont icon-transfer"></span>
           </template>
           <template #default>
-            Upload Here!!!!!!
+            <Uploader ref="uploaderRef" @uploadCallback="uploadCallBackHandler"></Uploader>
           </template>
         </el-popover>
         <el-dropdown>
@@ -63,13 +63,25 @@
           </div>
           <div class="space-info">
             <div>空间使用</div>
-            <div class="percent"></div>
+            <div class="percent">
+              <el-progress
+                  :percentage="Math.floor(usedSpaceInfo.useSpace / usedSpaceInfo.totalSpace * 10000) / 100"
+                  color="#409eff">
+              </el-progress>
+            </div>
+            <div class="space-use">
+              <div class="use">
+                {{proxy.Utils.size2Str(usedSpaceInfo.useSpace)}}/{{proxy.Utils.size2Str(usedSpaceInfo.totalSpace)}}
+
+              </div>
+              <div class="iconfont icon-refresh" @click="getUsedSpace"></div>
+            </div>
           </div>
         </div>
       </div>
       <div class="body-content">
         <router-view v-slot="{ Component }">
-          <component :is="Component"></component>
+          <component ref="routerViewRef" :is="Component" @addFile="addFile" @reload="getUsedSpace"></component>
         </router-view>
       </div>
     </div>
@@ -81,13 +93,35 @@
 import {ref, reactive, getCurrentInstance, nextTick, watch} from "vue";
 import {useRouter, useRoute} from "vue-router";
 import UpdatePassword from "@/views/UpdatePassword.vue";
+import Uploader from "@/views/main/Uploader.vue";
 
 const {proxy} = getCurrentInstance();
 const router = useRouter();
 const route = useRoute();
 const api = {
-  logout: "/exit"
+  logout: "/exit",
+  getUsedSpace: "/getUsedSpace"
 }
+
+const uploaderRef = ref();
+
+const showUploader = ref(false)
+
+// Add file
+const addFile = (data) => {
+  const {file, filePid} = data;
+  showUploader.value = true;
+  uploaderRef.value.addFile(file, filePid);
+}
+
+const routerViewRef = ref()
+const uploadCallBackHandler = () => {
+  nextTick(() => {
+    routerViewRef.value.reload();
+    getUsedSpace();
+  })
+}
+
 const userInfo = ref(proxy.VueCookies.get("userInfo"));
 
 const menus = [
@@ -217,18 +251,33 @@ const updatePassword = () => {
 const logout = async () => {
   proxy.Confirm(`你确定要退出吗`, async () => {
     let result = await proxy.Request({
-    url: api.logout,
-  })
+      url: api.logout,
+    })
 
     if (!result) {
       return;
     }
 
     proxy.VueCookies.remove("userInfo");
-    router.push("/login")})
-
-
+    router.push("/login")
+  })
 }
+
+// Used space
+const usedSpaceInfo = ref({useSpace: 0, totalSpace: 1});
+const getUsedSpace = async () => {
+  let result = await proxy.Request({
+    url: api.getUsedSpace,
+    showLoading: false,
+  });
+  if (!result) {
+    return;
+  }
+  usedSpaceInfo.value = result.data;
+}
+
+// init should get the usedspace
+getUsedSpace();
 </script>
 
 <style lang="scss" scoped>

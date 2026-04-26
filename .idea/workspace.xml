@@ -5,36 +5,107 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82749053-4fb4-44fe-a8b3-0a4a7364bb03" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/kuopan-front/src/assets/file.list.scss" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/Icon.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/Table.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Utils.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/FileInfoController.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/FileInfoMapper.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/FileInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/dto/UploadResultDto.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/FileCategoryEnum.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/FileDelFlag.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/FileInfoStatus.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/UploadStatusEnum.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Mappers/FileInfoMapper.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/IFileInfoService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/GUIDGenerate.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/vo/FileInfoVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/assets/music_cover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/assets/music_icon.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/assets/share_bg.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/FolderSelect.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/Navigation.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/NoData.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/Window.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/Preview.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/PreviewDoc.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/PreviewDownload.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/PreviewExcel.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/PreviewImage.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/PreviewMusic.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/PreviewPdf.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/PreviewTxt.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/components/preview/PreviewVideo.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/js/CategoryInfo.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/views/ShareFile.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/views/main/Uploader.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/views/webShare/Share.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/kuopan-front/src/views/webShare/ShareCheck.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Config/MybatisConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/AdminController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/CommonFileController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/FileShareController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/RecycleController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/WebShareController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/FileShareMapper.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/FileShare.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/dto/DownloadFileDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/dto/SessionShareDto.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/FileFolderTypeEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/FileTypeEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/ShareValidTypeEnum.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/query/FileInfoQuery.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/query/FileShareQuery.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/query/UserInfoQuery.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/IFileShareService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/FileShareServiceImpl.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/FfmpegUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/ScaleFilter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/task/FileDeleteTask.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/vo/FolderVO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/vo/PaginationResultVO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/vo/ShareInfoVO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/vo/UserInfoVO.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/Mappers/FileShareMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/Mappers/UserInfoMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/88affee9-9cda-42ce-804c-eb09028daba0.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/88affee9-9cda-42ce-804c-eb09028daba0.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/fd3a7be5-6ba6-4d99-9d8b-0be65ed010da.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/fd3a7be5-6ba6-4d99-9d8b-0be65ed010da.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_4_12_12_32_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_2026_4_12_12_32__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2026_4_13_13_33_[更改]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_2026_4_13_13_33___.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_revert_[更改]1/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_revert___1.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/assets/file.list.scss" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/assets/file.list.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/components/Icon.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/components/Icon.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/components/Table.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/components/Table.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kuopan-front/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/router/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/utils/Message.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Message.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/utils/Request.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Request.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/utils/Utils.js" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/utils/Utils.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/Framework.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/Framework.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/Login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/Login.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/admin/FileList.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/admin/FileList.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/admin/SysSettings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/admin/SysSettings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/admin/UserList.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/admin/UserList.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/main/Main.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/main/Main.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/recycle/Recycle.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/recycle/Recycle.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kuopan-front/src/views/share/Share.vue" beforeDir="false" afterPath="$PROJECT_DIR$/kuopan-front/src/views/share/Share.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisComponent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Component/RedisComponent.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Config/SecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/BaseController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/BaseController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/FileInfoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/FileInfoController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/UserInfoController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Controller/UserInfoController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/FileInfoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/FileInfoMapper.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/UserInfoMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/DAO/UserInfoMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/FileInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/FileInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/UserInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/UserInfo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/constants/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/constants/Constants.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/dto/SysSettingsDto.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/dto/SysSettingsDto.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/ResponseCodeEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/ResponseCodeEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/UploadStatusEnum.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Entity/enums/UploadStatusEnum.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Mappers/FileInfoMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/Mappers/FileInfoMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Mappers/UserInfoMapper.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/IFileInfoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/IFileInfoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/IUserInfoService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/IUserInfoService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/EmailCodeServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/EmailCodeServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/FileInfoServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/UserInfoServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Service/impl/UserInfoServiceImpl.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/GUIDGenerate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/GUIDGenerate.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/SHAUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/SHAUtil.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/StringUtil.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/Util/StringUtil.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/kuopan/vo/FileInfoVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/kuopan/vo/FileInfoVO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/rebel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/rebel.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,10 +118,10 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Vue Composition API Component" />
+        <option value="Enum" />
         <option value="JavaScript File" />
         <option value="Class" />
-        <option value="Enum" />
+        <option value="Vue Composition API Component" />
       </list>
     </option>
   </component>
@@ -73,7 +144,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/Dioxideforsure/GraduationDesign.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/Dioxideforsure/GDPrivate&quot;,
     &quot;accountId&quot;: &quot;b51112f4-9e6e-4d1b-982d-86a1ce54f398&quot;
   }
 }</component>
@@ -93,24 +164,32 @@
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
-    &quot;Application.MyBatisGenerator.executor&quot;: &quot;Run&quot;,
+    &quot;Application.GUIDGenerate.executor&quot;: &quot;Run&quot;,
+    &quot;Application.MyBatisGenerator.executor&quot;: &quot;JRebel Executor&quot;,
+    &quot;Application.SHAUtil.executor&quot;: &quot;Run&quot;,
+    &quot;JavaScript Debug.VueDebug.executor&quot;: &quot;Debug&quot;,
+    &quot;Maven.KuoPan [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.KuoPan [install].executor&quot;: &quot;Run&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;New/updated database configurations found&quot;,
+    &quot;Notification.DoNotAsk-DatabaseConfigFileWatcher.found&quot;: &quot;true&quot;,
     &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
     &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
     &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
     &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;Spring Boot.KuoPanApplication.executor&quot;: &quot;JRebel Debug&quot;,
     &quot;database.data.extractors.current.export.id&quot;: &quot;SQL Updates&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/ZXY/IdeaProjects/GraduationDesign&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/GDPrivate/kuopan-front/src/assets&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Libraries&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
     &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;ts.external.directory.path&quot;: &quot;D:\\Program Files\\JetBrains\\IntelliJ IDEA 2025.3.1.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
@@ -125,19 +204,22 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\GDPrivate\kuopan-front\src\assets" />
+      <recent name="D:\GDPrivate\kuopan-front\src\components\preview" />
+      <recent name="D:\GDPrivate\src\main\java\com\kuopan\Util" />
       <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\Service\impl" />
-      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\DAO" />
-      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\Mappers" />
-      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\Controller" />
-      <recent name="C:\Users\ZXY\IdeaProjects\GraduationDesign\src\main\java\com\kuopan\Entity" />
+      <recent name="D:\GDPrivate\kuopan-front\src\assets" />
+      <recent name="D:\GDPrivate\src\main\java\com\kuopan\Service\impl" />
+      <recent name="D:\GDPrivate\src\main\java\com\kuopan\Service" />
+      <recent name="D:\GDPrivate\src\main\resources\Mappers" />
+      <recent name="D:\GDPrivate\src\main\java\com\kuopan\DAO" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.MyBatisGenerator">
-    <configuration name="MyBatisGenerator" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.kuopan.Util.MyBatisGenerator" />
+  <component name="RunManager" selected="JavaScript Debug.VueDebug">
+    <configuration name="GUIDGenerate" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.kuopan.Util.GUIDGenerate" />
       <module name="KuoPan" />
       <extension name="coverage">
         <pattern>
@@ -149,6 +231,22 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="SHAUtil" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.kuopan.Util.SHAUtil" />
+      <module name="KuoPan" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.kuopan.Util.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="VueDebug" type="JavascriptDebugType" engineId="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" uri="http://127.0.0.1:1024/">
+      <method v="2" />
+    </configuration>
     <configuration name="KuoPanApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
       <module name="KuoPan" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.kuopan.KuoPanApplication" />
@@ -156,9 +254,16 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="Application.GUIDGenerate" />
+      <item itemvalue="Application.SHAUtil" />
+      <item itemvalue="JavaScript Debug.VueDebug" />
+      <item itemvalue="Spring Boot.KuoPanApplication" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.MyBatisGenerator" />
+        <item itemvalue="Application.GUIDGenerate" />
+        <item itemvalue="Application.SHAUtil" />
       </list>
     </recent_temporary>
   </component>
@@ -181,6 +286,24 @@
       <workItem from="1776143899875" duration="9227000" />
       <workItem from="1776228709220" duration="10109000" />
       <workItem from="1776238933361" duration="542000" />
+      <workItem from="1776240422898" duration="11380000" />
+      <workItem from="1776306703258" duration="1506000" />
+      <workItem from="1776328447681" duration="7844000" />
+      <workItem from="1776395825506" duration="13806000" />
+      <workItem from="1776483083191" duration="14592000" />
+      <workItem from="1776663477566" duration="22144000" />
+      <workItem from="1776696880549" duration="7393000" />
+      <workItem from="1776738701130" duration="23615000" />
+      <workItem from="1776780153296" duration="12379000" />
+      <workItem from="1776827681171" duration="19852000" />
+      <workItem from="1776870303019" duration="8403000" />
+      <workItem from="1776911588086" duration="978000" />
+      <workItem from="1776924191254" duration="10323000" />
+      <workItem from="1776960036959" duration="3339000" />
+      <workItem from="1777016956680" duration="6189000" />
+      <workItem from="1777038046338" duration="17253000" />
+      <workItem from="1777121863188" duration="17991000" />
+      <workItem from="1777167513032" duration="5244000" />
     </task>
     <servers />
   </component>
@@ -197,5 +320,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

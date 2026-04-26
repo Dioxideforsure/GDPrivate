@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum UploadStatusEnum {
-    FLASH_UPLOAD("upload_second", "秒传"),
+    FLASH_UPLOAD("upload_seconds", "秒传"),
     UPLOADING("uploading", "上传中"),
     UPLOADED("upload_finish", "上传完成");
 

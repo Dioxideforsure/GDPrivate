@@ -1,11 +1,14 @@
 package com.kuopan.Entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -36,7 +39,7 @@ public class FileInfo implements Serializable {
     /**
      * The ID of the file belongs to the user.
      */
-    @TableId("user_id")
+    @TableField("user_id")
     private String userId;
 
     /**
@@ -72,11 +75,15 @@ public class FileInfo implements Serializable {
     /**
      * The first create time
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     /**
      * The latest upload time.
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdateTime;
 
     /**
@@ -104,10 +111,17 @@ document, 5 is other.
     /**
      * The time in recycle bin
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime recoveryTime;
 
     /**
      * The mark of delete, 0 is deletion, 1 is in recycle bin, 2 is normal.
      */
     private Integer delFlag;
+
+    /**
+     * The mark of delete, 0 is deletion, 1 is in recycle bin, 2 is normal.
+     */
+    @TableField(exist = false)
+    private String userName;
 }

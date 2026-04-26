@@ -56,7 +56,7 @@ const getImage = () => {
 
 <template>
   <span :style="{ width: width + 'px', height: width + 'px' }" class="icon">
-    <img src="getImage()" :style="{ 'object-fit': fit }" />
+    <img :src="getImage()" :style="{ 'object-fit': fit }" />
   </span>
 </template>
 
@@ -66,7 +66,7 @@ const getImage = () => {
   display: inline-block;
   border-radius: 3px;
   overflow: hidden;
-  .img {
+  img {
     width: 100%;
     height: 100%;
   }

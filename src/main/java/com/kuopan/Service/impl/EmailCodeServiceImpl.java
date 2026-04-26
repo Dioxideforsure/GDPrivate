@@ -76,13 +76,13 @@ public class EmailCodeServiceImpl implements EmailCodeService {
 
             SysSettingsDto sysSettingsDto = redisComponent.getSysSettingDto();
 
-            helper.setSubject(sysSettingsDto.getEmailTitle());
-            helper.setText(String.format(sysSettingsDto.getEmailContent(), code));
+            helper.setSubject(sysSettingsDto.getRegisterEmailTitle());
+            helper.setText(String.format(sysSettingsDto.getRegisterEmailContent(), code));
             helper.setSentDate(new Date());
 
             javaMailSender.send(message);
         } catch (Exception e) {
-            log.error("邮件发送失败");
+            log.error("邮件发送失败", e);
             throw new BusinessException("邮件发送失败");
         }
     }

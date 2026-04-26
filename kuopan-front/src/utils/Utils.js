@@ -6,7 +6,7 @@ export default {
         } else if (limit < 0.1 * 1024 * 1024) {
             size = (limit / 1024).toFixed(2) + "KB" // Show kilobytes if smaller than 0.1 MB
         }else if (limit < 0.1 * 1024 * 1024 * 1024) {
-            size = (limit / 1024 / 1024).toFixed(2) + "KB"; // Show megabytes if smaller than 0.1 GB
+            size = (limit / 1024 / 1024).toFixed(2) + "MB"; // Show megabytes if smaller than 0.1 GB
         } else {
             size = (limit / 1024 / 1024 / 1024 ).toFixed(2) + "GB"; // Show gigabytes when bigger than 0.1GB
         }

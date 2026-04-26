@@ -4,7 +4,7 @@ const showMessage = (msg, callback, type) => {
     ElMessage({
         type: type,
         message: msg,
-        duration: 20000,
+        duration: 1000,
         onClose: () => {
             if (callback) {
                 callback()

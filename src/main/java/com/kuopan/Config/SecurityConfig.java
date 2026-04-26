@@ -18,7 +18,9 @@ public class SecurityConfig {
         http
                 .authorizeRequests()
                 .antMatchers("/checkCode", "/sendEmailCode", "/resetPassword", "/login",
-                        "/getUsedSpace", "/updatePassword", "/exit")
+                        "/getUsedSpace", "/updatePassword", "/exit",
+                        "/file/**", "/recycle/**", "/share/**",
+                        "/admin/**", "/showShare/**")
                 .permitAll()
                 .anyRequest().
                 authenticated().and().csrf().disable();

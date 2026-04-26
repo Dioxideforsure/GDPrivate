@@ -2,17 +2,17 @@
 import {ref, computed} from "vue";
 
 const emit = defineEmits(["rowSelected", "rowClick"])
-const props = defineEmits({
+const props = defineProps({
   dataSource: Object,
-  showPagination:{
+  showPagination: {
     type: Boolean,
     default: true
   },
-  showPageSize:{
+  showPageSize: {
     type: Boolean,
     default: true
   },
-  options:{
+  options: {
     type: Object,
     default: {
       exHeight: 0,
@@ -29,7 +29,7 @@ const props = defineEmits({
 
 const layout = computed(() => {
   return `total, ${
-    props.showPageSize ? "sizes" : ""
+      props.showPageSize ? "sizes" : ""
   }, prev, pager, next, jumper`
 });
 
@@ -60,7 +60,7 @@ const setCurrentRow = (rowKey, rowValue) => {
   dataTable.value.setCurrentRow(row)
 }
 
-defineExpose({ setCurrentRow, clearSelection});
+defineExpose({setCurrentRow, clearSelection});
 
 const handleRowClick = (row) => {
   emit("rowClick", row);
@@ -137,12 +137,12 @@ const handlePageNoChange = (pageNo) => {
 
     <div class="pagination" v-if="showPagination">
       <el-pagination
-          v-if="dataSource.totalCount"
+          v-if="dataSource.totalCount !== undefined"
           background
-          :total="dataSource"
+          :total="dataSource.totalCount"
           :page-sizes="[15, 30, 50, 100]"
           :page-size="dataSource.pageSize"
-          :current-page.sync="dataSource.pageNo"
+          v-model:current-page="dataSource.pageNo"
           :layout="layout"
           @size-change="handlePageSizeChange"
           @current-change="handlePageNoChange"
@@ -157,9 +157,11 @@ const handlePageNoChange = (pageNo) => {
   padding-top: 10px;
   padding-right: 10px;
 }
+
 .el-pagination {
   justify-content: right;
 }
+
 :deep .el-table__cell {
   padding: 4px 0px;
 }

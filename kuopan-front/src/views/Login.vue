@@ -323,7 +323,6 @@ const resetForm = () => {
     resetPasswordConfirm: "",
     checkCode: ""
   };
-  // TODO: use cookie to remember login status
   if (opType.value === 0) {
     const cookieLoginInfo = proxy.VueCookies.get("loginInfo");
     if (cookieLoginInfo) {

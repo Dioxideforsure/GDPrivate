@@ -1,0 +1,9 @@
+package com.kuopan.vo;
+
+import lombok.Data;
+
+@Data
+public class FolderVO {
+    private String fileName;
+    private String fileId;
+}

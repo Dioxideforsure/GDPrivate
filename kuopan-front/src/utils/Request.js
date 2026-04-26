@@ -13,7 +13,7 @@ const responseTypeJson = "json"
 let loading = null;
 const instance = axios.create({
     baseURL: '/api',
-    timeout: 30 * 1000,
+    timeout: 30 * 100000,
 });
 
 //请求前拦截器

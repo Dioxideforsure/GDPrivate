@@ -15,17 +15,17 @@
             </el-button>
           </el-upload>
         </div>
-        <el-button type="success" @click="newFolder" v-if="category == 'all'">
+        <el-button type="success" v-if="category == 'all'" @click="newFolder">
           <span class="iconfont icon-folder-add"></span>
           新建文件夹
         </el-button>
 
-        <el-button type="danger">
-          <span class="iconfont icon-folder-del"></span>
+        <el-button type="danger" :disabled="selectFileIdList.length === 0" @click="delFileBatch">
+          <span class="iconfont icon-del"></span>
           批量删除
         </el-button>
 
-        <el-button type="warning">
+        <el-button type="warning" :disabled="selectFileIdList.length === 0" @click="moveFolderBatch">
           <span class="iconfont icon-move"></span>
           批量移动
         </el-button>
@@ -33,26 +33,28 @@
         <div class="search-panel">
           <el-input
               clearable
-              placeholder="请输入文件名搜索">
+              placeholder="请输入文件名搜索本层目录"
+              v-model="fileNameFuzzy"
+              @keyup.enter="search">
             <template #suffix>
-              <i class="iconfont icon-search"></i>
+              <i class="iconfont icon-search" @click="search"></i>
             </template>
           </el-input>
         </div>
 
-        <div class="iconfont icon-refresh"></div>
+        <div class="iconfont icon-refresh" @click="loadDataList"></div>
       </div>
       <!--      Navigation      -->
-      <div>全部文件</div>
+      <Navigation ref="navigationRef" @naviChange="naviChange"></Navigation>
     </div>
 
-    <div class="file-list">
+    <div class="file-list" v-if="tableData.list && tableData.list.length > 0">
       <Table ref="dataTableRef"
              :columns="columns"
              :showPagination="true"
              :dataSource="tableData"
              :fetch="loadDataList"
-             :initFetch="true"
+             :initFetch="false"
              :options="tableOptions"
              @rowSelected="rowSelected">
         <template #fileName="{index, row}">
@@ -63,12 +65,12 @@
             </template>
 
             <template v-else>
-              <Icon v-if="row.folderType == 0" :file-type="row.fileType"></Icon>
-              <Icon v-if="row.folderType == 1" :file-type="0"></Icon>
+              <Icon v-if="row.folderType == 0" :fileType="row.fileType"></Icon>
+              <Icon v-if="row.folderType == 1" :fileType="0"></Icon>
             </template>
 
             <span class="file-name" v-if="!row.showEdit" :title="row.fileName">
-              <span>{{ row.fileName }}</span>
+              <span @click="preview(row)">{{ row.fileName }}</span>
               <span v-if="row.status == 0" class="transfer-status">转码中</span>
               <span v-if="row.status == 1" class="transfer-status transfer-fail">转码失败</span>
             </span>
@@ -82,16 +84,16 @@
               </el-input>
               <span :class="['iconfont icon-right1', row.fileNameReal?'':'not-allow']"
                     @click="saveNameEdit(index)"></span>
-              <span class="iconfont icon-error" @click="cancelNameEditor"></span>
+              <span class="iconfont icon-error" @click="cancelNameEditor(index)"></span>
             </div>
 
             <span class="op">
               <template v-if="row.showOp && row.filePid && row.status == 2">
-                <span class="iconfont icon-share1">分享</span>
-                <span class="iconfont icon-download" v-if="row.folderType == 0">下载</span>
-                <span class="iconfont icon-del">删除</span>
+                <span class="iconfont icon-share1" @click="share(row)">分享</span>
+                <span class="iconfont icon-download" v-if="row.folderType == 0" @click="download(row)">下载</span>
+                <span class="iconfont icon-del" @click="delFile(row)">删除</span>
                 <span class="iconfont icon-edit" @click="editFileName(index)">重命名</span>
-                <span class="iconfont icon-move">移动</span>
+                <span class="iconfont icon-move" @click="moveFolder(row)">移动</span>
               </template>
             </span>
 
@@ -104,19 +106,64 @@
         </template>
       </Table>
     </div>
+    <div class="no-data" v-else>
+      <div class="no-data-inner">
+        <Icon iconName="no_data" :width="120" fit="fill"></Icon>
+        <div class="tips">当前目录为空，上传你的第一个文件吧</div>
+        <div class="op-list">
+          <el-upload
+              :show-file-list="false"
+              :with-credentials="true"
+              :multiple="true"
+              :http-request="addFile"
+              :accept="fileAccept">
+            <div class="op-item">
+              <Icon iconName="file" :width="60"></Icon>
+              <div>上传文件</div>
+            </div>
+          </el-upload>
+          <div class="op-item" v-if="category == 'all'" @click="newFolder">
+            <Icon iconName="folder" :width="60"></Icon>
+            <div>新建目录</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <FolderSelect ref="folderSelectRef" @folderSelect="moveFolderDone"></FolderSelect>
+    <!--    Preview     -->
+    <Preview ref="previewRef"></Preview>
+    <!--    Share     -->
+    <ShareFile ref="shareRef"></ShareFile>
   </div>
 </template>
 
 <script setup>
 
 
-import {ref, reactive, getCurrentInstance, nextTick} from "vue";
-import Icon from "@/components/Icon.vue";
+import {ref, reactive, getCurrentInstance, nextTick, computed} from "vue";
+import CategoryInfo from "@/js/CategoryInfo.js"
+import ShareFile from '@/views/ShareFile.vue'
 
 const {proxy} = getCurrentInstance();
 
+const emit = defineEmits("addFile")
+
+const addFile = (fileData) => {
+  emit("addFile", {file: fileData.file, filePid: currentFolder.value.fileId})
+}
+
+// file callback
+const reload = async () => {
+  showLoading.value = false;
+  await loadDataList();
+};
+defineExpose({reload})
+
+// Current folder
+const currentFolder = ref({fileId: "0"})
+
 const api = {
-  loadDataList: "file/loadDataList",
+  loadDataList: "/file/loadDataList",
   rename: "/file/rename",
   newFolder: "/file/newFolder",
   getFolderInfo: "/file/getFolderInfo",
@@ -125,6 +172,15 @@ const api = {
   createDownloadUrl: "/file/createDownloadUrl",
   download: "/api/file/download",
 };
+
+const fileNameFuzzy = ref();
+const showLoading = ref(true);
+const category = ref({});
+
+const fileAccept = computed(() => {
+  const categoryItem = CategoryInfo[category.value];
+  return categoryItem ? categoryItem.accept : "*";
+})
 
 const columns = [
   {
@@ -144,7 +200,10 @@ const columns = [
     width: 200,
   },
 ];
-
+const search = () => {
+  showLoading.value = true;
+  loadDataList();
+}
 const tableData = ref({});
 const tableOptions = ref({
   exHeight: 50,
@@ -152,20 +211,20 @@ const tableOptions = ref({
 });
 
 
-const fileNameFuzzy = ref();
-const category = ref();
 const loadDataList = async () => {
   let params = {
     pageNo: tableData.value.pageNo,
     pageSize: tableData.value.pageSize,
     fileNameFuzzy: fileNameFuzzy.value,
-    filePid: 0
+    filePid: currentFolder.value.fileId,
+    category: category.value,
   };
   if (params.category !== "all") {
     delete params.filePid;
   }
   let result = await proxy.Request({
     url: api.loadDataList,
+    showLoading: showLoading.value,
     params: params
   });
 
@@ -174,25 +233,23 @@ const loadDataList = async () => {
   }
   tableData.value = result.data;
 };
-const rowSelected = () => {
-
-};
 
 // Show operation buttons
 const showOp = (row) => {
   tableData.value.list.forEach(element => {
-    element.showOp(false);
+    element.showOp = false;
   });
-  row.showOp(true);
+  row.showOp = true;
 }
 
 const cancelShowOp = (row) => {
-  row.showOp(false)
+  row.showOp = false
 }
 
 // Editor
 const editing = ref(false)
 const editNameRef = ref();
+
 // New Folder
 const newFolder = () => {
   if (editing.value) {
@@ -206,7 +263,7 @@ const newFolder = () => {
     showEdit: true,
     fileType: 0,
     fileId: "",
-    filePid: 0,
+    filePid: currentFolder.value.fileId,
   })
   nextTick(() => {
     editNameRef.value.focus();
@@ -214,7 +271,7 @@ const newFolder = () => {
 }
 
 // Cancel new folder
-const cancelNameEdit = (index) => {
+const cancelNameEditor = (index) => {
   const fileData = tableData.value.list[index];
   if (fileData.fileId) {
     fileData.showEdit = false;
@@ -225,9 +282,9 @@ const cancelNameEdit = (index) => {
 }
 
 // Save the folder
-const saveNameEdit = async () => {
+const saveNameEdit = async (index) => {
   const {fileId, filePid, fileNameReal} = tableData.value.list[index];
-  if (fileId == "" || fileNameReal.indexOf("/") != -1) {
+  if (fileNameReal == "" || fileNameReal.indexOf("/") != -1) {
     proxy.Message.warning("文件名不能为空且不能含有斜杠");
     return;
   }
@@ -236,9 +293,12 @@ const saveNameEdit = async () => {
     url = api.newFolder;
   }
   let result = await proxy.Request({
-    fileId: fileId,
-    filePid: filePid,
-    fileName: fileNameReal,
+    url: url,
+    params: {
+      fileId: fileId,
+      filePid: filePid,
+      fileName: fileNameReal,
+    },
   })
   if (!result) {
     return;
@@ -271,6 +331,136 @@ const editFileName = (index) => {
   nextTick(() => {
     editNameRef.value.focus();
   })
+}
+
+// Multi-select
+const selectFileIdList = ref([]);
+const rowSelected = (rows) => {
+  selectFileIdList.value = [];
+  rows.forEach(item => {
+    selectFileIdList.value.push(item.fileId)
+  })
+};
+
+// Delete file
+const delFile = (row) => {
+  proxy.Confirm(`你确定要删除【${row.fileName}】吗？删除的文件可再10天内通过回收站还原`,
+      async () => {
+        let result = await proxy.Request({
+          url: api.delFile,
+          params: {
+            fileIds: row.fileId,
+          },
+        })
+
+        if (!result) {
+          return;
+        }
+        await loadDataList();
+      });
+}
+
+// Delete file batch
+const delFileBatch = () => {
+  if (selectFileIdList.value.length === 0) {
+    return;
+  }
+  proxy.Confirm(`你确认要删除这些文件吗？删除的文件可再10天内通过回收站还原`,
+      async () => {
+        let result = await proxy.Request({
+          url: api.delFile,
+          params: {
+            fileIds: selectFileIdList.value.join(","),
+          },
+        })
+
+        if (!result) {
+          return;
+        }
+        loadDataList();
+      })
+
+}
+
+const folderSelectRef = ref();
+const currentMoveFile = ref({});
+
+const moveFolder = (data) => {
+  currentMoveFile.value = data;
+  folderSelectRef.value.showFolderDialog(data.fileId)
+}
+
+const moveFolderBatch = () => {
+  currentMoveFile.value = {}
+  const excludeIds = selectFileIdList.value.join(",");
+  folderSelectRef.value.showFolderDialog(excludeIds);
+}
+
+const moveFolderDone = async (folderId) => {
+  if (currentFolder.value.fileId === folderId) {
+    proxy.Message.warning("文件正在当前目录，无法移动");
+    return;
+  }
+  let fileIdsArray = [];
+  if (currentMoveFile.value.fileId) {
+    fileIdsArray.push(currentMoveFile.value.fileId);
+  } else {
+    fileIdsArray = fileIdsArray.concat(selectFileIdList.value);
+  }
+  let result = await proxy.Request({
+    url: api.changeFileFolder,
+    params: {
+      fileIds: fileIdsArray.join(","),
+      filePid: folderId,
+    }
+  })
+  if (!result) {
+    return;
+  }
+  folderSelectRef.value.close();
+  loadDataList();
+};
+
+// Preview
+const navigationRef = ref();
+const previewRef = ref();
+const preview = (data) => {
+  // folder
+  if (data.folderType == 1) {
+    navigationRef.value.openFolder(data);
+  } else {
+    // file
+    if (data.status != 2) {
+      proxy.Message.warning("文件未完成转码，无法预览");
+      return;
+    }
+    previewRef.value.showPreview(data, 0);
+  }
+}
+
+const naviChange = (data) => {
+  const {categoryId, curFolder} = data;
+  currentFolder.value = curFolder;
+  category.value = categoryId;
+  loadDataList()
+}
+
+// Download files
+const download = async (row) => {
+  let result = await proxy.Request({
+    url: api.createDownloadUrl + "/" + row.fileId,
+  })
+  if (!result) {
+    return;
+  }
+
+  window.location.href = api.download + "/" + result.data
+}
+
+// Share
+const shareRef = ref();
+const share = (row) => {
+  shareRef.value.show(row)
 }
 </script>
 

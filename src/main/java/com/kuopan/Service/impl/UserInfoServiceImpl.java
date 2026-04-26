@@ -6,12 +6,14 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.kuopan.Component.RedisComponent;
 import com.kuopan.Config.AppConfig;
 import com.kuopan.DAO.FileInfoMapper;
+import com.kuopan.Entity.FileInfo;
 import com.kuopan.Entity.UserInfo;
 import com.kuopan.DAO.UserInfoMapper;
 import com.kuopan.Entity.constants.Constants;
 import com.kuopan.Entity.dto.SessionWebUserDto;
 import com.kuopan.Entity.dto.UserSpaceDto;
 import com.kuopan.Entity.enums.SHAEnum;
+import com.kuopan.Entity.enums.UserStatusEnum;
 import com.kuopan.Exception.BusinessException;
 import com.kuopan.Service.EmailCodeService;
 import com.kuopan.Service.IUserInfoService;
@@ -48,6 +50,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Resource
     private RedisComponent redisComponent;
+
     @Autowired
     private EmailCodeService emailCodeService;
 
@@ -55,7 +58,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SessionWebUserDto login(String email, String password) {
-        System.out.println( "Notice:" + email + password);
         LambdaQueryWrapper<UserInfo> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(UserInfo::getEmail, email);
         UserInfo user = userInfoMapper.selectOne(lambdaQueryWrapper);
@@ -84,6 +86,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         redisComponent.saveUserUsedSpace(user.getUserId(), userSpaceDto);
 
         return sessionWebUserDto;
+    }
+
+    @Override
+    public UserInfo selectByUserId(String userId) {
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, userId));
     }
 
     @Override
@@ -138,5 +145,27 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateUserStatus(String userId, Boolean status) {
+        LambdaUpdateWrapper<UserInfo> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserInfo::getUserId, userId);
+        UserInfo updateUser = new UserInfo();
+        updateUser.setStatus(status);
+        if (UserStatusEnum.DISABLE.getStatus().equals(status)) {
+            updateUser.setOccuSpace(0L);
+            fileInfoMapper.delete(new LambdaQueryWrapper<FileInfo>()
+                    .eq(FileInfo::getUserId, userId));
+        }
+        userInfoMapper.update(updateUser, updateWrapper);
+    }
 
+    @Override
+    public void changeUserSpace(String userId, Integer changeSpace) {
+        Long space = changeSpace * Constants.MB;
+        UserInfo userInfo = new UserInfo();
+        userInfo.setTotalSpace(space);
+        userInfoMapper.update(userInfo, new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUserId, userId));
+        redisComponent.resetUserUsedSpace(userId);
+    }
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kuopan.DAO.FileShareMapper">
+    <select id="selectByUserIdWithFileName" resultType="com.kuopan.Entity.FileShare">
+        select s.*,
+               f.file_name     as fileName,
+               f.folder_type   as folderType,
+               f.file_category as fileCategory,
+               f.file_cover    as fileCover,
+               f.file_type     as fileType
+        from file_share s
+                 left join file_info f on s.file_id = f.file_id
+        where s.user_id = #{userId}
+        order by s.share_time desc
+    </select>
+
+    <update id="updateShareShowCount">
+        update file_share
+        set show_count = show_count + 1
+        where share_id = #{shareId}
+    </update>
+
+</mapper>
